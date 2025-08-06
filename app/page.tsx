@@ -21,157 +21,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Bell, Briefcase, Clock, MessageSquare, Mic, Plus, Users, Building2, Send, BarChart3, CheckCircle2, Circle, AlertCircle, Eye, Edit, ExternalLink, AlarmClock, Moon, Sun, TrendingUp, Calendar, Target, FileText, Settings } from 'lucide-react'
+import { useJobs, useReminders, useInsights } from "@/lib/hooks"
 
-// 模拟数据
-const mockJobs = [
-  {
-    id: 1,
-    company: "腾讯",
-    position: "高级前端工程师",
-    status: "面试 - 第二轮",
-    appliedDate: "2024-01-15",
-    progress: 60,
-    nextAction: "技术面试",
-    nextActionDate: "2024-01-20",
-    description: "负责微信小程序开发平台的前端架构设计和开发",
-    requirements: "5年以上前端开发经验，熟悉React、Vue.js，有小程序开发经验",
-    salary: "35-50万",
-    location: "深圳",
-    type: "全职",
-  },
-  {
-    id: 2,
-    company: "阿里巴巴",
-    position: "全栈开发工程师",
-    status: "已投递",
-    appliedDate: "2024-01-18",
-    progress: 25,
-    nextAction: "跟进HR",
-    nextActionDate: "2024-01-22",
-    description: "负责淘宝商家后台系统的全栈开发",
-    requirements: "熟悉Java、Spring Boot、React，有电商系统开发经验",
-    salary: "30-45万",
-    location: "杭州",
-    type: "全职",
-  },
-  {
-    id: 3,
-    company: "字节跳动",
-    position: "资深前端工程师",
-    status: "电话筛选",
-    appliedDate: "2024-01-10",
-    progress: 40,
-    nextAction: "准备现场面试",
-    nextActionDate: "2024-01-25",
-    description: "负责抖音创作者工具的前端开发",
-    requirements: "熟悉现代前端技术栈，有视频处理相关经验优先",
-    salary: "40-60万",
-    location: "北京",
-    type: "全职",
-  },
-  {
-    id: 4,
-    company: "美团",
-    position: "前端技术专家",
-    status: "已完成",
-    appliedDate: "2024-01-05",
-    progress: 100,
-    nextAction: "等待offer",
-    nextActionDate: "2024-01-28",
-    description: "负责美团外卖商家端的前端技术架构",
-    requirements: "7年以上前端经验，有大型项目架构经验",
-    salary: "45-65万",
-    location: "北京",
-    type: "全职",
-  },
-]
-
-const initialReminders = [
-  {
-    id: 1,
-    title: "跟进阿里巴巴HR",
-    time: "10:00",
-    date: "今天",
-    company: "阿里巴巴",
-    type: "跟进",
-    completed: false,
-    priority: "high",
-  },
-  {
-    id: 2,
-    title: "腾讯技术面试准备",
-    time: "14:00",
-    date: "明天",
-    company: "腾讯",
-    type: "面试",
-    completed: false,
-    priority: "urgent",
-  },
-  {
-    id: 3,
-    title: "提交字节跳动作业",
-    time: "17:00",
-    date: "1月23日",
-    company: "字节跳动",
-    type: "截止日期",
-    completed: false,
-    priority: "high",
-  },
-  {
-    id: 4,
-    title: "完成简历更新",
-    time: "09:00",
-    date: "今天",
-    company: "通用",
-    type: "任务",
-    completed: true,
-    priority: "medium",
-  },
-  {
-    id: 5,
-    title: "研究美团公司文化",
-    time: "15:30",
-    date: "昨天",
-    company: "美团",
-    type: "研究",
-    completed: true,
-    priority: "low",
-  },
-]
-
-const mockInsights = [
-  {
-    id: 1,
-    title: "腾讯面试攻略",
-    description: "基于最新面试经验总结的技巧分享",
-    type: "面试",
-    company: "腾讯",
-    content: "腾讯面试注重基础能力和项目经验。技术面试通常包含算法题、系统设计和项目深挖。建议准备常见的前端算法题，了解微信生态的技术架构，准备好详细的项目介绍。行为面试会关注团队协作和学习能力。",
-    tags: ["面试技巧", "算法", "项目经验"],
-    readTime: "5分钟",
-  },
-  {
-    id: 2,
-    title: "阿里巴巴企业文化深度解析",
-    description: "了解阿里的价值观和工作氛围",
-    type: "文化",
-    company: "阿里巴巴",
-    content: "阿里巴巴秉承'让天下没有难做的生意'的使命，注重客户第一、团队合作、拥抱变化等价值观。工作节奏较快，但提供良好的成长机会。面试时要体现出对用户体验的关注和商业思维。",
-    tags: ["企业文化", "价值观", "工作环境"],
-    readTime: "8分钟",
-  },
-  {
-    id: 3,
-    title: "字节跳动相似职位推荐",
-    description: "发现了3个匹配您背景的新职位",
-    type: "职位",
-    company: "字节跳动",
-    content: "基于您的技能匹配，推荐以下职位：1. 抖音前端工程师 - 负责短视频相关功能开发；2. 今日头条全栈工程师 - 负责推荐系统前端展示；3. 飞书前端专家 - 负责协作工具的用户体验优化。",
-    tags: ["职位推荐", "技能匹配", "新机会"],
-    readTime: "3分钟",
-  },
-]
-
+// 推荐职位数据（静态数据）
 const recommendedJobs = [
   {
     id: 5,
@@ -205,7 +57,7 @@ const recommendedJobs = [
   },
 ]
 
-// 周数据统计
+// 周数据统计（静态数据）
 const weeklyData = [
   { day: "周一", applications: 2, interviews: 1, tasks: 5 },
   { day: "周二", applications: 3, interviews: 0, tasks: 7 },
@@ -221,13 +73,49 @@ export default function JobSearchAssistant() {
   const [quickInput, setQuickInput] = useState("")
   const [isListening, setIsListening] = useState(false)
   const [userName] = useState("小李")
-  const [reminders, setReminders] = useState(initialReminders)
-  const [jobs, setJobs] = useState(mockJobs)
-  const [selectedInsight, setSelectedInsight] = useState(null)
-  const [selectedJob, setSelectedJob] = useState(null)
   const [isAddJobOpen, setIsAddJobOpen] = useState(false)
   const [isAddAlarmOpen, setIsAddAlarmOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return "早上好"
+    if (hour < 18) return "下午好"
+    return "晚上好"
+  }
+  
+  // 获取优先级颜色
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "urgent":
+        return "border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20"
+      case "high":
+        return "border-l-4 border-orange-500 bg-orange-50 dark:bg-orange-900/20"
+      case "medium":
+        return "border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+      case "low":
+        return "border-l-4 border-gray-500 bg-gray-50 dark:bg-gray-800/20"
+      default:
+        return "border-l-4 border-gray-300 bg-gray-50 dark:bg-gray-800/20"
+    }
+  }
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "已投递":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+      case "电话筛选":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+      case "面试 - 第一轮":
+      case "面试 - 第二轮":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+      case "已完成":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+      case "已拒绝":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+    }
+  }
+
   const [newJob, setNewJob] = useState({
     company: "",
     position: "",
@@ -247,119 +135,71 @@ export default function JobSearchAssistant() {
     priority: "medium",
   })
 
+  // 使用 Supabase hooks
+  const { jobs, loading: jobsLoading, error: jobsError, addJob, updateJobStatus } = useJobs()
+  const { reminders, loading: remindersLoading, error: remindersError, addReminder, toggleReminder } = useReminders()
+  const { insights, loading: insightsLoading, error: insightsError } = useInsights()
+
   const handleQuickInput = (input: string) => {
-    console.log("处理输入:", input)
-    // 这里可以添加AI处理逻辑
     setQuickInput("")
   }
 
-  const toggleReminder = (id: number) => {
-    setReminders(
-      reminders.map((reminder) => 
-        reminder.id === id ? { ...reminder, completed: !reminder.completed } : reminder
-      )
-    )
+  const handleToggleReminder = async (id: number, completed: boolean) => {
+    await toggleReminder(id, completed)
   }
 
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    if (hour < 12) return "早上好"
-    if (hour < 18) return "下午好"
-    return "晚上好"
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "已投递":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-      case "电话筛选":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-      case "面试 - 第一轮":
-      case "面试 - 第二轮":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
-      case "已完成":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-      case "已拒绝":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-    }
-  }
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return "border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20"
-      case "high":
-        return "border-l-4 border-orange-500 bg-orange-50 dark:bg-orange-900/20"
-      case "medium":
-        return "border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-      case "low":
-        return "border-l-4 border-gray-500 bg-gray-50 dark:bg-gray-800/20"
-      default:
-        return "border-l-4 border-gray-300 bg-gray-50 dark:bg-gray-800/20"
-    }
-  }
-
-  const addNewJob = () => {
+  const addNewJob = async () => {
     const job = {
       ...newJob,
-      id: jobs.length + 1,
-      appliedDate: new Date().toISOString().split("T")[0],
+      applied_date: new Date().toISOString().split("T")[0],
       progress: 25,
-      nextAction: "跟进",
-      nextActionDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      next_action: "跟进",
+      next_action_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
     }
-    setJobs([...jobs, job])
-    setNewJob({
-      company: "",
-      position: "",
-      status: "已投递",
-      description: "",
-      requirements: "",
-      salary: "",
-      location: "",
-      type: "全职",
-    })
-    setIsAddJobOpen(false)
+    const result = await addJob(job)
+    if (result) {
+      setNewJob({
+        company: "",
+        position: "",
+        status: "已投递",
+        description: "",
+        requirements: "",
+        salary: "",
+        location: "",
+        type: "全职",
+      })
+      setIsAddJobOpen(false)
+    }
   }
 
-  const addNewAlarm = () => {
+  const addNewAlarm = async () => {
     const alarm = {
       ...newAlarm,
-      id: reminders.length + 1,
       completed: false,
     }
-    setReminders([...reminders, alarm])
-    setNewAlarm({
-      title: "",
-      time: "",
-      date: "",
-      company: "",
-      type: "任务",
-      priority: "medium",
-    })
-    setIsAddAlarmOpen(false)
+    const result = await addReminder(alarm)
+    if (result) {
+      setNewAlarm({
+        title: "",
+        time: "",
+        date: "",
+        company: "",
+        type: "任务",
+        priority: "medium",
+      })
+      setIsAddAlarmOpen(false)
+    }
   }
 
-  const updateJobStatus = (jobId: number, newStatus: string) => {
-    setJobs(
-      jobs.map((job) =>
-        job.id === jobId
-          ? {
-              ...job,
-              status: newStatus,
-              progress: newStatus === "已完成" ? 100 : 
-                       newStatus === "面试 - 第二轮" ? 80 :
-                       newStatus === "面试 - 第一轮" ? 60 :
-                       newStatus === "电话筛选" ? 40 : 25,
-            }
-          : job,
-      ),
-    )
+  const handleUpdateJobStatus = async (jobId: number, newStatus: string) => {
+    const progress = newStatus === "已完成" ? 100 : 
+                   newStatus === "面试 - 第二轮" ? 80 :
+                   newStatus === "面试 - 第一轮" ? 60 :
+                   newStatus === "电话筛选" ? 40 : 25
+    await updateJobStatus(jobId, newStatus, progress)
   }
 
-  // 计算统计数据
+  // 统计数据
   const completedTasks = reminders.filter((r) => r.completed).length
   const pendingTasks = reminders.filter((r) => !r.completed).length
   const totalApplications = jobs.length
@@ -422,6 +262,34 @@ export default function JobSearchAssistant() {
             <span className="text-xs text-muted-foreground mt-1">{item.day.slice(-1)}</span>
           </div>
         ))}
+      </div>
+    )
+  }
+
+  // 加载和错误处理
+  if (jobsLoading || remindersLoading || insightsLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">正在加载数据...</p>
+        </div>
+      </div>
+    )
+  }
+  if (jobsError || remindersError || insightsError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold mb-2">数据加载失败</h2>
+          <p className="text-muted-foreground mb-4">
+            {jobsError || remindersError || insightsError}
+          </p>
+          <Button onClick={() => window.location.reload()}>
+            重新加载
+          </Button>
+        </div>
       </div>
     )
   }
@@ -735,7 +603,7 @@ export default function JobSearchAssistant() {
                             <div className="flex items-center space-x-3">
                               <Checkbox 
                                 checked={item.completed} 
-                                onCheckedChange={() => toggleReminder(item.id)} 
+                                onCheckedChange={() => handleToggleReminder(item.id, !item.completed)} 
                               />
                               <div className="flex-1">
                                 <p className="text-sm font-medium">{item.title}</p>
@@ -857,7 +725,7 @@ export default function JobSearchAssistant() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockInsights.map((insight) => (
+              {insights.map((insight) => (
                 <Dialog key={insight.id}>
                   <DialogTrigger asChild>
                     <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
@@ -1125,11 +993,11 @@ export default function JobSearchAssistant() {
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">申请日期:</span>
-                          <span>{job.appliedDate}</span>
+                          <span>{job.applied_date}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">下一步:</span>
-                          <span className="font-medium">{job.nextAction}</span>
+                          <span className="font-medium">{job.next_action}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">薪资:</span>
@@ -1200,7 +1068,7 @@ export default function JobSearchAssistant() {
                             <div className="space-y-4">
                               <div>
                                 <Label>选择新状态</Label>
-                                <Select onValueChange={(value) => updateJobStatus(job.id, value)}>
+                                <Select onValueChange={(value) => handleUpdateJobStatus(job.id, value)}>
                                   <SelectTrigger>
                                     <SelectValue placeholder="选择状态" />
                                   </SelectTrigger>
@@ -1361,7 +1229,7 @@ export default function JobSearchAssistant() {
                             <div className="flex items-center space-x-3">
                               <Checkbox
                                 checked={reminder.completed}
-                                onCheckedChange={() => toggleReminder(reminder.id)}
+                                onCheckedChange={() => handleToggleReminder(reminder.id, !reminder.completed)}
                               />
                               <div>
                                 <p
