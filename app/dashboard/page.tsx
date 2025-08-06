@@ -1,11 +1,26 @@
+"use client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BarChart3, TrendingUp, Users, DollarSign, Activity, ArrowUpRight, ArrowDownRight, MoreHorizontal } from 'lucide-react'
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
+  const router = useRouter()
+
+  // 检查登录状态 - 只在客户端检查
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userId = localStorage.getItem("user_id")
+      if (!userId) {
+        router.replace("/login")
+      }
+    }
+  }, [router])
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -25,6 +40,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>

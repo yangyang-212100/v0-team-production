@@ -1,6 +1,16 @@
+-- 创建 users 表
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- 创建 jobs 表
+DROP TABLE IF EXISTS jobs CASCADE;
 CREATE TABLE IF NOT EXISTS jobs (
   id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   company VARCHAR(255) NOT NULL,
   position VARCHAR(255) NOT NULL,
   status VARCHAR(100) NOT NULL DEFAULT '已投递',
@@ -18,8 +28,10 @@ CREATE TABLE IF NOT EXISTS jobs (
 );
 
 -- 创建 reminders 表
+DROP TABLE IF EXISTS reminders CASCADE;
 CREATE TABLE IF NOT EXISTS reminders (
   id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   title VARCHAR(255) NOT NULL,
   time TIME,
   date VARCHAR(100) NOT NULL,
@@ -45,18 +57,18 @@ CREATE TABLE IF NOT EXISTS insights (
 );
 
 -- 插入示例数据
-INSERT INTO jobs (company, position, status, applied_date, progress, next_action, next_action_date, description, requirements, salary, location, type) VALUES
-('腾讯', '高级前端工程师', '面试 - 第二轮', '2024-01-15', 60, '技术面试', '2024-01-20', '负责微信小程序开发平台的前端架构设计和开发', '5年以上前端开发经验，熟悉React、Vue.js，有小程序开发经验', '35-50万', '深圳', '全职'),
-('阿里巴巴', '全栈开发工程师', '已投递', '2024-01-18', 25, '跟进HR', '2024-01-22', '负责淘宝商家后台系统的全栈开发', '熟悉Java、Spring Boot、React，有电商系统开发经验', '30-45万', '杭州', '全职'),
-('字节跳动', '资深前端工程师', '电话筛选', '2024-01-10', 40, '准备现场面试', '2024-01-25', '负责抖音创作者工具的前端开发', '熟悉现代前端技术栈，有视频处理相关经验优先', '40-60万', '北京', '全职'),
-('美团', '前端技术专家', '已完成', '2024-01-05', 100, '等待offer', '2024-01-28', '负责美团外卖商家端的前端技术架构', '7年以上前端经验，有大型项目架构经验', '45-65万', '北京', '全职');
+INSERT INTO jobs (user_id, company, position, status, applied_date, progress, next_action, next_action_date, description, requirements, salary, location, type) VALUES
+(1, '腾讯', '高级前端工程师', '面试 - 第二轮', '2024-01-15', 60, '技术面试', '2024-01-20', '负责微信小程序开发平台的前端架构设计和开发', '5年以上前端开发经验，熟悉React、Vue.js，有小程序开发经验', '35-50万', '深圳', '全职'),
+(1, '阿里巴巴', '全栈开发工程师', '已投递', '2024-01-18', 25, '跟进HR', '2024-01-22', '负责淘宝商家后台系统的全栈开发', '熟悉Java、Spring Boot、React，有电商系统开发经验', '30-45万', '杭州', '全职'),
+(1, '字节跳动', '资深前端工程师', '电话筛选', '2024-01-10', 40, '准备现场面试', '2024-01-25', '负责抖音创作者工具的前端开发', '熟悉现代前端技术栈，有视频处理相关经验优先', '40-60万', '北京', '全职'),
+(1, '美团', '前端技术专家', '已完成', '2024-01-05', 100, '等待offer', '2024-01-28', '负责美团外卖商家端的前端技术架构', '7年以上前端经验，有大型项目架构经验', '45-65万', '北京', '全职');
 
-INSERT INTO reminders (title, time, date, company, type, completed, priority) VALUES
-('跟进阿里巴巴HR', '10:00', '今天', '阿里巴巴', '跟进', false, 'high'),
-('腾讯技术面试准备', '14:00', '明天', '腾讯', '面试', false, 'urgent'),
-('提交字节跳动作业', '17:00', '1月23日', '字节跳动', '截止日期', false, 'high'),
-('完成简历更新', '09:00', '今天', '通用', '任务', true, 'medium'),
-('研究美团公司文化', '15:30', '昨天', '美团', '研究', true, 'low');
+INSERT INTO reminders (user_id, title, time, date, company, type, completed, priority) VALUES
+(1, '跟进阿里巴巴HR', '10:00', '今天', '阿里巴巴', '跟进', false, 'high'),
+(1, '腾讯技术面试准备', '14:00', '明天', '腾讯', '面试', false, 'urgent'),
+(1, '提交字节跳动作业', '17:00', '1月23日', '字节跳动', '截止日期', false, 'high'),
+(1, '完成简历更新', '09:00', '今天', '通用', '任务', true, 'medium'),
+(1, '研究美团公司文化', '15:30', '昨天', '美团', '研究', true, 'low');
 
 INSERT INTO insights (title, description, type, company, content, tags, read_time) VALUES
 ('腾讯面试攻略', '基于最新面试经验总结的技巧分享', '面试', '腾讯', '腾讯面试注重基础能力和项目经验。技术面试通常包含算法题、系统设计和项目深挖。建议准备常见的前端算法题，了解微信生态的技术架构，准备好详细的项目介绍。行为面试会关注团队协作和学习能力。', ARRAY['面试技巧', '算法', '项目经验'], '5分钟'),

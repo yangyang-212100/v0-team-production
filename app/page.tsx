@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -72,10 +73,31 @@ export default function JobSearchAssistant() {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [quickInput, setQuickInput] = useState("")
   const [isListening, setIsListening] = useState(false)
-  const [userName] = useState("小李")
+  const [userName, setUserName] = useState("小李")
   const [isAddJobOpen, setIsAddJobOpen] = useState(false)
   const [isAddAlarmOpen, setIsAddAlarmOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
+  const router = useRouter()
+
+  // 检查登录状态 - 只在客户端检查
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const userId = localStorage.getItem("user_id")
+      const username = localStorage.getItem("username")
+      if (!userId) {
+        router.replace("/login")
+      } else if (username) {
+        setUserName(username)
+      }
+    }
+  }, [router])
+
+  const handleLogout = () => {
+    localStorage.removeItem("user_id")
+    localStorage.removeItem("username")
+    router.push("/login")
+  }
+
   const getGreeting = () => {
     const hour = new Date().getHours()
     if (hour < 12) return "早上好"
@@ -315,9 +337,26 @@ export default function JobSearchAssistant() {
             >
               {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => router.push("/tasks")}
+            >
+              我的任务
+            </Button>
             <Button variant="ghost" size="icon">
               <Bell className="h-4 w-4" />
             </Button>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-muted-foreground">{userName}</span>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={handleLogout}
+              >
+                退出登录
+              </Button>
+            </div>
             <Avatar className="h-8 w-8">
               <AvatarImage src="/placeholder.svg?height=32&width=32" />
               <AvatarFallback>{userName[0]}</AvatarFallback>
