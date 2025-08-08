@@ -14,8 +14,12 @@ export function useJobs() {
       const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
       const userIdNum = userId ? parseInt(userId) : undefined
       
-      const data = await jobsApi.getAll(userIdNum)
-      setJobs(data)
+      let data = await jobsApi.getAll(userIdNum)
+      // 如果当前用户没有数据，回退加载全部样例数据，避免页面空白
+      if (!data || data.length === 0) {
+        data = await jobsApi.getAll(undefined)
+      }
+      setJobs(data || [])
       setError(null)
     } catch (err) {
       setError('获取职位数据失败')
@@ -37,6 +41,7 @@ export function useJobs() {
       }
       
       const jobWithUserId = { ...job, user_id: userIdNum }
+      console.log('Creating job payload:', jobWithUserId)
       const newJob = await jobsApi.create(jobWithUserId)
       if (newJob) {
         setJobs([newJob, ...jobs])
@@ -104,8 +109,11 @@ export function useReminders() {
       const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
       const userIdNum = userId ? parseInt(userId) : undefined
       
-      const data = await remindersApi.getAll(userIdNum)
-      setReminders(data)
+      let data = await remindersApi.getAll(userIdNum)
+      if (!data || data.length === 0) {
+        data = await remindersApi.getAll(undefined)
+      }
+      setReminders(data || [])
       setError(null)
     } catch (err) {
       setError('获取提醒数据失败')

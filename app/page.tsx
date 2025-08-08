@@ -171,6 +171,10 @@ export default function JobSearchAssistant() {
   }
 
   const addNewJob = async () => {
+    if (!newJob.company.trim() || !newJob.position.trim()) {
+      alert("请先填写公司名称和职位名称")
+      return
+    }
     const job = {
       ...newJob,
       applied_date: new Date().toISOString().split("T")[0],
@@ -802,7 +806,7 @@ export default function JobSearchAssistant() {
                         {insight.title}
                         <Badge variant="outline">{insight.company}</Badge>
                       </DialogTitle>
-                      <DialogDescription>
+                      <DialogDescription asChild>
                         <div className="flex items-center space-x-4 mt-2">
                           <span className="flex items-center text-xs">
                             <Clock className="h-3 w-3 mr-1" />

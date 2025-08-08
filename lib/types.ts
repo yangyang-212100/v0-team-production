@@ -1,5 +1,6 @@
 export interface Job {
   id: number
+  user_id: number
   company: string
   position: string
   status: string
@@ -18,6 +19,7 @@ export interface Job {
 
 export interface Reminder {
   id: number
+  user_id: number
   title: string
   time: string
   date: string

@@ -5,16 +5,12 @@ import { Job, Reminder, Insight } from './types'
 export const jobsApi = {
   // 获取所有职位
   async getAll(userId?: number): Promise<Job[]> {
-    let query = supabase
+    const queryBuilder = supabase
       .from('jobs')
       .select('*')
       .order('created_at', { ascending: false })
     
-    if (userId) {
-      query = query.eq('user_id', userId)
-    }
-    
-    const { data, error } = await query
+    const { data, error } = await (userId ? queryBuilder.eq('user_id', userId) : queryBuilder)
     
     if (error) {
       console.error('Error fetching jobs:', error)
@@ -33,7 +29,13 @@ export const jobsApi = {
       .single()
     
     if (error) {
-      console.error('Error creating job:', error)
+      // 打印更详细的错误信息，便于排查必填列缺失或外键错误
+      console.error('Error creating job:', {
+        message: (error as any)?.message,
+        details: (error as any)?.details,
+        hint: (error as any)?.hint,
+        code: (error as any)?.code,
+      })
       return null
     }
     
@@ -77,16 +79,12 @@ export const jobsApi = {
 export const remindersApi = {
   // 获取所有提醒
   async getAll(userId?: number): Promise<Reminder[]> {
-    let query = supabase
+    const queryBuilder = supabase
       .from('reminders')
       .select('*')
       .order('created_at', { ascending: false })
     
-    if (userId) {
-      query = query.eq('user_id', userId)
-    }
-    
-    const { data, error } = await query
+    const { data, error } = await (userId ? queryBuilder.eq('user_id', userId) : queryBuilder)
     
     if (error) {
       console.error('Error fetching reminders:', error)
@@ -105,7 +103,12 @@ export const remindersApi = {
       .single()
     
     if (error) {
-      console.error('Error creating reminder:', error)
+      console.error('Error creating reminder:', {
+        message: (error as any)?.message,
+        details: (error as any)?.details,
+        hint: (error as any)?.hint,
+        code: (error as any)?.code,
+      })
       return null
     }
     
