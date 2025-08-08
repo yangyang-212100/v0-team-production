@@ -10,7 +10,11 @@ export function useJobs() {
   const fetchJobs = async () => {
     try {
       setLoading(true)
-      const data = await jobsApi.getAll()
+      // 获取当前用户ID
+      const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
+      const userIdNum = userId ? parseInt(userId) : undefined
+      
+      const data = await jobsApi.getAll(userIdNum)
       setJobs(data)
       setError(null)
     } catch (err) {
@@ -23,7 +27,17 @@ export function useJobs() {
 
   const addJob = async (job: Omit<Job, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const newJob = await jobsApi.create(job)
+      // 获取当前用户ID
+      const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
+      const userIdNum = userId ? parseInt(userId) : undefined
+      
+      if (!userIdNum) {
+        setError('用户未登录')
+        return null
+      }
+      
+      const jobWithUserId = { ...job, user_id: userIdNum }
+      const newJob = await jobsApi.create(jobWithUserId)
       if (newJob) {
         setJobs([newJob, ...jobs])
         return newJob
@@ -86,7 +100,11 @@ export function useReminders() {
   const fetchReminders = async () => {
     try {
       setLoading(true)
-      const data = await remindersApi.getAll()
+      // 获取当前用户ID
+      const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
+      const userIdNum = userId ? parseInt(userId) : undefined
+      
+      const data = await remindersApi.getAll(userIdNum)
       setReminders(data)
       setError(null)
     } catch (err) {
@@ -99,7 +117,17 @@ export function useReminders() {
 
   const addReminder = async (reminder: Omit<Reminder, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const newReminder = await remindersApi.create(reminder)
+      // 获取当前用户ID
+      const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
+      const userIdNum = userId ? parseInt(userId) : undefined
+      
+      if (!userIdNum) {
+        setError('用户未登录')
+        return null
+      }
+      
+      const reminderWithUserId = { ...reminder, user_id: userIdNum }
+      const newReminder = await remindersApi.create(reminderWithUserId)
       if (newReminder) {
         setReminders([newReminder, ...reminders])
         return newReminder

@@ -4,11 +4,17 @@ import { Job, Reminder, Insight } from './types'
 // Jobs API
 export const jobsApi = {
   // 获取所有职位
-  async getAll(): Promise<Job[]> {
-    const { data, error } = await supabase
+  async getAll(userId?: number): Promise<Job[]> {
+    let query = supabase
       .from('jobs')
       .select('*')
       .order('created_at', { ascending: false })
+    
+    if (userId) {
+      query = query.eq('user_id', userId)
+    }
+    
+    const { data, error } = await query
     
     if (error) {
       console.error('Error fetching jobs:', error)
@@ -70,11 +76,17 @@ export const jobsApi = {
 // Reminders API
 export const remindersApi = {
   // 获取所有提醒
-  async getAll(): Promise<Reminder[]> {
-    const { data, error } = await supabase
+  async getAll(userId?: number): Promise<Reminder[]> {
+    let query = supabase
       .from('reminders')
       .select('*')
       .order('created_at', { ascending: false })
+    
+    if (userId) {
+      query = query.eq('user_id', userId)
+    }
+    
+    const { data, error } = await query
     
     if (error) {
       console.error('Error fetching reminders:', error)
