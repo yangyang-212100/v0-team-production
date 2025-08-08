@@ -249,20 +249,29 @@ export function useInsights() {
 
 export function useCompanyData() {
   const [companyData, setCompanyData] = useState<CompanyData[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const fetchCompanyData = async (companies: string[]) => {
+    if (companies.length === 0) {
+      setCompanyData([])
+      return
+    }
+
     try {
       setLoading(true)
-      const data = await Promise.all(
-        companies.map(company => companyDataApi.getByCompany(company))
-      )
-      setCompanyData(data.filter(Boolean) as CompanyData[])
       setError(null)
+      
+      const dataPromises = companies.map(company => companyDataApi.getByCompany(company))
+      const results = await Promise.all(dataPromises)
+      
+      // 过滤掉null结果
+      const validData = results.filter(Boolean) as CompanyData[]
+      setCompanyData(validData)
     } catch (err) {
       setError('获取公司数据失败')
       console.error('Error fetching company data:', err)
+      setCompanyData([])
     } finally {
       setLoading(false)
     }

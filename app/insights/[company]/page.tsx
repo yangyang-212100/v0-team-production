@@ -44,24 +44,30 @@ export default function CompanyDetailPage({ params }: { params: { company: strin
         setCurrentCompanyData(data)
       } catch (error) {
         console.error('Error loading company data:', error)
+        setCurrentCompanyData(null)
       } finally {
         setLoading(false)
       }
     }
 
-    loadCompanyData()
+    if (company) {
+      loadCompanyData()
+    }
   }, [company])
 
   // 加载岗位洞察
   useEffect(() => {
     const loadPositionInsight = async () => {
-      if (position) {
+      if (position && company) {
         try {
           const data = await positionInsightsApi.getByCompanyAndPosition(company, position)
           setCurrentPositionInsight(data)
         } catch (error) {
           console.error('Error loading position insight:', error)
+          setCurrentPositionInsight(null)
         }
+      } else {
+        setCurrentPositionInsight(null)
       }
     }
 

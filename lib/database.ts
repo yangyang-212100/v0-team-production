@@ -186,34 +186,49 @@ export const insightsApi = {
 export const companyDataApi = {
   // 获取公司数据
   async getByCompany(companyName: string): Promise<CompanyData | null> {
-    const { data, error } = await supabase
-      .from('company_data')
-      .select('*')
-      .eq('company_name', companyName)
-      .single()
-    
-    if (error) {
-      console.error('Error fetching company data:', error)
+    try {
+      const { data, error } = await supabase
+        .from('company_data')
+        .select('*')
+        .eq('company_name', companyName)
+        .single()
+      
+      if (error) {
+        // 如果没有找到数据，这是正常的，不是错误
+        if (error.code === 'PGRST116') {
+          console.log(`No company data found for: ${companyName}`)
+          return null
+        }
+        console.error('Error fetching company data:', error)
+        return null
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Error in getByCompany:', error)
       return null
     }
-    
-    return data
   },
 
   // 创建公司数据
   async create(companyData: Omit<CompanyData, 'id' | 'created_at'>): Promise<CompanyData | null> {
-    const { data, error } = await supabase
-      .from('company_data')
-      .insert([companyData])
-      .select()
-      .single()
-    
-    if (error) {
-      console.error('Error creating company data:', error)
+    try {
+      const { data, error } = await supabase
+        .from('company_data')
+        .insert([companyData])
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('Error creating company data:', error)
+        return null
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Error in create company data:', error)
       return null
     }
-    
-    return data
   }
 }
 
@@ -221,35 +236,50 @@ export const companyDataApi = {
 export const positionInsightsApi = {
   // 获取岗位洞察
   async getByCompanyAndPosition(companyName: string, position: string): Promise<PositionInsight | null> {
-    const { data, error } = await supabase
-      .from('position_insights')
-      .select('*')
-      .eq('company_name', companyName)
-      .eq('position', position)
-      .single()
-    
-    if (error) {
-      console.error('Error fetching position insight:', error)
+    try {
+      const { data, error } = await supabase
+        .from('position_insights')
+        .select('*')
+        .eq('company_name', companyName)
+        .eq('position', position)
+        .single()
+      
+      if (error) {
+        // 如果没有找到数据，这是正常的，不是错误
+        if (error.code === 'PGRST116') {
+          console.log(`No position insight found for: ${companyName} - ${position}`)
+          return null
+        }
+        console.error('Error fetching position insight:', error)
+        return null
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Error in getByCompanyAndPosition:', error)
       return null
     }
-    
-    return data
   },
 
   // 创建岗位洞察
   async create(positionInsight: Omit<PositionInsight, 'id' | 'created_at'>): Promise<PositionInsight | null> {
-    const { data, error } = await supabase
-      .from('position_insights')
-      .insert([positionInsight])
-      .select()
-      .single()
-    
-    if (error) {
-      console.error('Error creating position insight:', error)
+    try {
+      const { data, error } = await supabase
+        .from('position_insights')
+        .insert([positionInsight])
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('Error creating position insight:', error)
+        return null
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Error in create position insight:', error)
       return null
     }
-    
-    return data
   },
 
   // 获取用户所有公司的岗位洞察

@@ -32,13 +32,16 @@ export default function InsightsPage() {
   // 加载公司数据和岗位洞察
   useEffect(() => {
     if (userCompanies.length > 0) {
-      fetchCompanyData(userCompanies)
-      
       const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
       const userIdNum = userId ? parseInt(userId) : undefined
+      
+      // 获取公司数据
+      fetchCompanyData(userCompanies)
+      
+      // 获取岗位洞察
       fetchPositionInsights(userIdNum)
     }
-  }, [userCompanies, fetchCompanyData, fetchPositionInsights])
+  }, [userCompanies]) // 只依赖userCompanies，避免无限循环
 
   // 获取公司数据
   const getCompanyData = (companyName: string) => {
