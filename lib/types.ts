@@ -41,4 +41,21 @@ export interface Insight {
   tags: string[]
   read_time: string
   created_at?: string
+}
+
+export interface CompanyData {
+  id: number
+  company_name: string
+  culture: string
+  products: string
+  created_at?: string
+}
+
+export interface PositionInsight {
+  id: number
+  company_name: string
+  position: string
+  interview_experience: string
+  skill_requirements: string
+  created_at?: string
 } 

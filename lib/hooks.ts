@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { jobsApi, remindersApi, insightsApi } from './database'
-import { Job, Reminder, Insight } from './types'
+import { jobsApi, remindersApi, insightsApi, companyDataApi, positionInsightsApi } from './database'
+import { Job, Reminder, Insight, CompanyData, PositionInsight } from './types'
 
 export function useJobs() {
   const [jobs, setJobs] = useState<Job[]>([])
@@ -45,6 +45,15 @@ export function useJobs() {
       const newJob = await jobsApi.create(jobWithUserId)
       if (newJob) {
         setJobs([newJob, ...jobs])
+        
+        // 触发AI生成洞察
+        try {
+          await generateInsights(job.company, job.position)
+        } catch (insightError) {
+          console.error('Error generating insights:', insightError)
+          // 不影响职位添加，只记录错误
+        }
+        
         return newJob
       }
     } catch (err) {
@@ -235,5 +244,89 @@ export function useInsights() {
     error,
     fetchInsights,
     addInsight
+  }
+}
+
+export function useCompanyData() {
+  const [companyData, setCompanyData] = useState<CompanyData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchCompanyData = async (companies: string[]) => {
+    try {
+      setLoading(true)
+      const data = await Promise.all(
+        companies.map(company => companyDataApi.getByCompany(company))
+      )
+      setCompanyData(data.filter(Boolean) as CompanyData[])
+      setError(null)
+    } catch (err) {
+      setError('获取公司数据失败')
+      console.error('Error fetching company data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return {
+    companyData,
+    loading,
+    error,
+    fetchCompanyData
+  }
+}
+
+export function usePositionInsights() {
+  const [positionInsights, setPositionInsights] = useState<PositionInsight[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchPositionInsights = async (userId?: number) => {
+    try {
+      setLoading(true)
+      if (userId) {
+        const data = await positionInsightsApi.getByUserJobs(userId)
+        setPositionInsights(data)
+      } else {
+        setPositionInsights([])
+      }
+      setError(null)
+    } catch (err) {
+      setError('获取岗位洞察失败')
+      console.error('Error fetching position insights:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return {
+    positionInsights,
+    loading,
+    error,
+    fetchPositionInsights
+  }
+}
+
+// AI洞察生成函数
+async function generateInsights(company: string, position: string) {
+  try {
+    const response = await fetch('/api/insights', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ company, position })
+    })
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('Generated insights:', data)
+    return data
+  } catch (error) {
+    console.error('Error generating insights:', error)
+    throw error
   }
 } 

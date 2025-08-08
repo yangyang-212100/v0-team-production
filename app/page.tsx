@@ -348,6 +348,13 @@ export default function JobSearchAssistant() {
             >
               我的任务
             </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => router.push("/insights")}
+            >
+              AI洞察
+            </Button>
             <Button variant="ghost" size="icon">
               <Bell className="h-4 w-4" />
             </Button>
@@ -756,135 +763,16 @@ export default function JobSearchAssistant() {
 
           {/* 洞察标签页 */}
           <TabsContent value="insights" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">职场洞察</h2>
-                <p className="text-muted-foreground">基于数据分析的个性化建议</p>
-              </div>
-              <Button variant="outline">
-                <Settings className="h-4 w-4 mr-2" />
-                偏好设置
+            <div className="text-center py-12">
+              <TrendingUp className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-2xl font-bold mb-2">AI 职业洞察</h2>
+              <p className="text-muted-foreground mb-6">
+                基于您的职位申请，AI为您生成个性化的公司分析和岗位建议
+              </p>
+              <Button onClick={() => router.push("/insights")} size="lg">
+                查看 AI 洞察
               </Button>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {insights.map((insight) => (
-                <Dialog key={insight.id}>
-                  <DialogTrigger asChild>
-                    <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                            {insight.title}
-                          </CardTitle>
-                          <Badge variant="outline">{insight.company}</Badge>
-                        </div>
-                        <CardDescription>{insight.description}</CardDescription>
-                        <div className="flex items-center space-x-2 mt-2">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">{insight.readTime}</span>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {insight.tags.map((tag, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                        <Button variant="outline" size="sm" className="w-full">
-                          <Eye className="h-4 w-4 mr-2" />
-                          阅读详情
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center justify-between">
-                        {insight.title}
-                        <Badge variant="outline">{insight.company}</Badge>
-                      </DialogTitle>
-                      <DialogDescription asChild>
-                        <div className="flex items-center space-x-4 mt-2">
-                          <span className="flex items-center text-xs">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {insight.readTime}
-                          </span>
-                          <span className="text-xs">类型: {insight.type}</span>
-                        </div>
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="mt-4">
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {insight.tags.map((tag, index) => (
-                          <Badge key={index} variant="secondary">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                      <p className="text-sm leading-relaxed">{insight.content}</p>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              ))}
-            </div>
-
-            {/* 推荐职位 */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <TrendingUp className="h-5 w-5 mr-2" />
-                  为您推荐
-                </CardTitle>
-                <CardDescription>基于您的申请历史和技能匹配</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recommendedJobs.map((job) => (
-                    <Card key={job.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center space-x-3">
-                            <Building2 className="h-8 w-8 text-muted-foreground" />
-                            <div>
-                              <h4 className="font-medium">{job.position}</h4>
-                              <p className="text-sm text-muted-foreground">{job.company}</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="space-y-2 mb-4">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">地点:</span>
-                            <span>{job.location}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">薪资:</span>
-                            <span className="font-medium">{job.salary}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">发布:</span>
-                            <span>{job.publishDate}</span>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-1 mb-4">
-                          {job.tags.map((tag, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                        <Button size="sm" className="w-full" onClick={() => window.open(job.applyUrl, "_blank")}>
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          立即申请
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           {/* 职位管理标签页 */}

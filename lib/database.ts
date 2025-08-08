@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { Job, Reminder, Insight } from './types'
+import { Job, Reminder, Insight, CompanyData, PositionInsight } from './types'
 
 // Jobs API
 export const jobsApi = {
@@ -179,5 +179,105 @@ export const insightsApi = {
     }
     
     return data
+  }
+}
+
+// Company Data API
+export const companyDataApi = {
+  // 获取公司数据
+  async getByCompany(companyName: string): Promise<CompanyData | null> {
+    const { data, error } = await supabase
+      .from('company_data')
+      .select('*')
+      .eq('company_name', companyName)
+      .single()
+    
+    if (error) {
+      console.error('Error fetching company data:', error)
+      return null
+    }
+    
+    return data
+  },
+
+  // 创建公司数据
+  async create(companyData: Omit<CompanyData, 'id' | 'created_at'>): Promise<CompanyData | null> {
+    const { data, error } = await supabase
+      .from('company_data')
+      .insert([companyData])
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Error creating company data:', error)
+      return null
+    }
+    
+    return data
+  }
+}
+
+// Position Insights API
+export const positionInsightsApi = {
+  // 获取岗位洞察
+  async getByCompanyAndPosition(companyName: string, position: string): Promise<PositionInsight | null> {
+    const { data, error } = await supabase
+      .from('position_insights')
+      .select('*')
+      .eq('company_name', companyName)
+      .eq('position', position)
+      .single()
+    
+    if (error) {
+      console.error('Error fetching position insight:', error)
+      return null
+    }
+    
+    return data
+  },
+
+  // 创建岗位洞察
+  async create(positionInsight: Omit<PositionInsight, 'id' | 'created_at'>): Promise<PositionInsight | null> {
+    const { data, error } = await supabase
+      .from('position_insights')
+      .insert([positionInsight])
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Error creating position insight:', error)
+      return null
+    }
+    
+    return data
+  },
+
+  // 获取用户所有公司的岗位洞察
+  async getByUserJobs(userId: number): Promise<PositionInsight[]> {
+    // 先获取用户的所有公司
+    const { data: userJobs, error: jobsError } = await supabase
+      .from('jobs')
+      .select('company')
+      .eq('user_id', userId)
+    
+    if (jobsError || !userJobs || userJobs.length === 0) {
+      return []
+    }
+    
+    const companies = userJobs.map(job => job.company)
+    
+    // 获取这些公司的岗位洞察
+    const { data, error } = await supabase
+      .from('position_insights')
+      .select('*')
+      .in('company_name', companies)
+      .order('created_at', { ascending: false })
+    
+    if (error) {
+      console.error('Error fetching user position insights:', error)
+      return []
+    }
+    
+    return data || []
   }
 } 

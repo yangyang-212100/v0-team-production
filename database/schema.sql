@@ -56,6 +56,26 @@ CREATE TABLE IF NOT EXISTS insights (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 创建公司数据表（AI生成的公司级信息）
+CREATE TABLE IF NOT EXISTS company_data (
+  id SERIAL PRIMARY KEY,
+  company_name VARCHAR(255) UNIQUE NOT NULL,
+  culture TEXT,
+  products TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 创建岗位洞察表（AI生成的岗位级信息）
+CREATE TABLE IF NOT EXISTS position_insights (
+  id SERIAL PRIMARY KEY,
+  company_name VARCHAR(255) NOT NULL,
+  position VARCHAR(255) NOT NULL,
+  interview_experience TEXT,
+  skill_requirements TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(company_name, position)
+);
+
 -- 插入示例数据
 INSERT INTO jobs (user_id, company, position, status, applied_date, progress, next_action, next_action_date, description, requirements, salary, location, type) VALUES
 (1, '腾讯', '高级前端工程师', '面试 - 第二轮', '2024-01-15', 60, '技术面试', '2024-01-20', '负责微信小程序开发平台的前端架构设计和开发', '5年以上前端开发经验，熟悉React、Vue.js，有小程序开发经验', '35-50万', '深圳', '全职'),
