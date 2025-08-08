@@ -76,7 +76,12 @@ CREATE TABLE IF NOT EXISTS position_insights (
   UNIQUE(company_name, position)
 );
 
--- 插入示例数据
+-- 首先插入用户数据
+INSERT INTO users (id, username, password_hash) VALUES
+(1, 'demo_user', 'ZGVtb191c2Vy') -- base64编码的 'demo_user'
+ON CONFLICT (id) DO NOTHING;
+
+-- 然后插入示例数据
 INSERT INTO jobs (user_id, company, position, status, applied_date, progress, next_action, next_action_date, description, requirements, salary, location, type) VALUES
 (1, '腾讯', '高级前端工程师', '面试 - 第二轮', '2024-01-15', 60, '技术面试', '2024-01-20', '负责微信小程序开发平台的前端架构设计和开发', '5年以上前端开发经验，熟悉React、Vue.js，有小程序开发经验', '35-50万', '深圳', '全职'),
 (1, '阿里巴巴', '全栈开发工程师', '已投递', '2024-01-18', 25, '跟进HR', '2024-01-22', '负责淘宝商家后台系统的全栈开发', '熟悉Java、Spring Boot、React，有电商系统开发经验', '30-45万', '杭州', '全职'),
