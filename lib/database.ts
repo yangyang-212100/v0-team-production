@@ -187,47 +187,98 @@ export const companyDataApi = {
   // 获取公司数据
   async getByCompany(companyName: string): Promise<CompanyData | null> {
     try {
+      console.log(`Fetching company data for: ${companyName}`)
+      
       const { data, error } = await supabase
         .from('company_data')
         .select('*')
         .eq('company_name', companyName)
-        .single()
+        .maybeSingle()
       
       if (error) {
-        // 如果没有找到数据，这是正常的，不是错误
-        if (error.code === 'PGRST116') {
+        // 无数据不是错误
+        if ((error as any)?.code === 'PGRST116' || (error as any)?.message?.includes?.('No rows')) {
           console.log(`No company data found for: ${companyName}`)
           return null
         }
-        console.error('Error fetching company data:', error)
+        // 某些情况下 SDK 可能返回空对象，这里仅做告警，避免刷屏
+        const hasDetails = !!((error as any)?.code || (error as any)?.message || (error as any)?.details || (error as any)?.hint)
+        if (hasDetails) {
+          console.warn('Error fetching company data:', error)
+        } else {
+          console.warn('Company data fetch returned an unknown error shape for:', companyName)
+        }
+        return null
+      }
+
+      // maybeSingle 无数据时可能返回 { data: null, error: null }
+      if (!data) {
+        console.log(`No company data found for: ${companyName}`)
         return null
       }
       
+      console.log(`Successfully fetched company data for: ${companyName}`)
       return data
     } catch (error) {
-      console.error('Error in getByCompany:', error)
+      console.error('Exception in getByCompany:', error)
       return null
     }
   },
 
-  // 创建公司数据
+  // 创建公司数据（兼容 JSONB 字段）
   async create(companyData: Omit<CompanyData, 'id' | 'created_at'>): Promise<CompanyData | null> {
     try {
+      console.log(`Creating company data for: ${companyData.company_name}`)
+      
+      const payload: any = { ...companyData }
+      // 若 JSON 字段为空对象则删除，避免入库为空对象
+      if (payload.culture_json && Object.keys(payload.culture_json).length === 0) delete payload.culture_json
+      if (payload.products_json && Object.keys(payload.products_json).length === 0) delete payload.products_json
+
       const { data, error } = await supabase
         .from('company_data')
-        .insert([companyData])
+        .insert([payload])
         .select()
         .single()
       
       if (error) {
         console.error('Error creating company data:', error)
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        })
         return null
       }
       
+      console.log(`Successfully created company data for: ${companyData.company_name}`)
       return data
     } catch (error) {
-      console.error('Error in create company data:', error)
+      console.error('Exception in create company data:', error)
       return null
+    }
+  },
+
+  // 删除公司数据
+  async delete(id: number): Promise<boolean> {
+    try {
+      console.log(`Deleting company data with id: ${id}`)
+      const { error } = await supabase
+        .from('company_data')
+        .delete()
+        .eq('id', id)
+      
+      if (error) {
+        console.error('Error deleting company data:', error)
+        return false
+      }
+      
+      console.log(`Successfully deleted company data with id: ${id}`)
+      return true
+    } catch (error) {
+      console.error('Exception in delete company data:', error)
+      return false
     }
   }
 }
@@ -264,9 +315,13 @@ export const positionInsightsApi = {
   // 创建岗位洞察
   async create(positionInsight: Omit<PositionInsight, 'id' | 'created_at'>): Promise<PositionInsight | null> {
     try {
+      const payload: any = { ...positionInsight }
+      if (payload.interview_json && Object.keys(payload.interview_json).length === 0) delete payload.interview_json
+      if (payload.skills_json && Object.keys(payload.skills_json).length === 0) delete payload.skills_json
+
       const { data, error } = await supabase
         .from('position_insights')
-        .insert([positionInsight])
+        .insert([payload])
         .select()
         .single()
       
@@ -284,30 +339,73 @@ export const positionInsightsApi = {
 
   // 获取用户所有公司的岗位洞察
   async getByUserJobs(userId: number): Promise<PositionInsight[]> {
-    // 先获取用户的所有公司
-    const { data: userJobs, error: jobsError } = await supabase
-      .from('jobs')
-      .select('company')
-      .eq('user_id', userId)
-    
-    if (jobsError || !userJobs || userJobs.length === 0) {
+    try {
+      console.log(`Fetching position insights for user: ${userId}`)
+      
+      // First get all companies associated with the user's jobs
+      const { data: userJobs, error: jobsError } = await supabase
+        .from('jobs')
+        .select('company')
+        .eq('user_id', userId)
+      
+      if (jobsError) {
+        console.error('Error fetching user jobs for insights:', jobsError)
+        return []
+      }
+      
+      if (!userJobs || userJobs.length === 0) {
+        console.log('No jobs found for user')
+        return []
+      }
+      
+      const companies = userJobs.map(job => job.company)
+      console.log('User companies:', companies)
+      
+      // Then get position insights for these companies
+      const { data, error } = await supabase
+        .from('position_insights')
+        .select('*')
+        .in('company_name', companies)
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('Error fetching user position insights:', error)
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        })
+        return []
+      }
+      
+      console.log(`Found ${data?.length || 0} position insights for user`)
+      return data || []
+    } catch (error) {
+      console.error('Exception in getByUserJobs:', error)
       return []
     }
-    
-    const companies = userJobs.map(job => job.company)
-    
-    // 获取这些公司的岗位洞察
-    const { data, error } = await supabase
-      .from('position_insights')
-      .select('*')
-      .in('company_name', companies)
-      .order('created_at', { ascending: false })
-    
-    if (error) {
-      console.error('Error fetching user position insights:', error)
-      return []
+  },
+
+  // 删除岗位洞察
+  async delete(id: number): Promise<boolean> {
+    try {
+      console.log(`Deleting position insight with id: ${id}`)
+      const { error } = await supabase
+        .from('position_insights')
+        .delete()
+        .eq('id', id)
+      
+      if (error) {
+        console.error('Error deleting position insight:', error)
+        return false
+      }
+      
+      console.log(`Successfully deleted position insight with id: ${id}`)
+      return true
+    } catch (error) {
+      console.error('Exception in delete position insight:', error)
+      return false
     }
-    
-    return data || []
   }
 } 

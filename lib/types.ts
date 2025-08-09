@@ -47,7 +47,22 @@ export interface CompanyData {
   id: number
   company_name: string
   culture: string
+  // 结构化存储（JSONB，可选）
+  culture_json?: {
+    core_values?: string[]
+    work_environment?: string[]
+    benefits?: string[]
+  }
+  culture_core_values?: string
+  culture_work_environment?: string
+  culture_benefits?: string
   products: string
+  products_json?: {
+    main_products?: string[]
+    tech_stack?: string[]
+    business_directions?: string[]
+    roadmap?: string[]
+  }
   created_at?: string
 }
 
@@ -56,6 +71,18 @@ export interface PositionInsight {
   company_name: string
   position: string
   interview_experience: string
+  interview_json?: {
+    process?: string[]
+    question_types?: string[]
+    tips?: string[]
+    preparation?: string[]
+  }
   skill_requirements: string
+  skills_json?: {
+    core_skills?: string[]
+    tech_stack?: string[]
+    resources?: string[]
+    focus?: string[]
+  }
   created_at?: string
 } 
