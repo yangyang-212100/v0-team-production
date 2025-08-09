@@ -61,6 +61,9 @@ CREATE TABLE IF NOT EXISTS company_data (
   id SERIAL PRIMARY KEY,
   company_name VARCHAR(255) UNIQUE NOT NULL,
   culture TEXT,
+  culture_core_values TEXT,
+  culture_work_environment TEXT,
+  culture_benefits TEXT,
   products TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

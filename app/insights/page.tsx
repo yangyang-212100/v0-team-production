@@ -84,9 +84,14 @@ export default function InsightsPage() {
                 <p className="text-muted-foreground mb-4">
                   您还没有添加任何职位申请，AI无法为您生成相关洞察
                 </p>
-                <Button onClick={() => router.push("/")}>
-                  去添加职位申请
-                </Button>
+                <div className="space-y-2">
+                  <Button onClick={() => router.push("/")} className="w-full">
+                    去添加职位申请
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    添加职位申请后，AI将自动为您生成公司文化和岗位分析
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -135,7 +140,7 @@ export default function InsightsPage() {
                     </Badge>
                   </div>
                   <CardDescription>
-                    {companyData ? 'AI已生成公司洞察' : 'AI正在生成公司洞察...'}
+                    {companyData ? 'AI已生成公司洞察' : '点击添加职位后AI将自动生成洞察'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

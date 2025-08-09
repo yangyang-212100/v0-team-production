@@ -14,16 +14,19 @@ export function useJobs() {
       const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
       const userIdNum = userId ? parseInt(userId) : undefined
       
-      let data = await jobsApi.getAll(userIdNum)
-      // 如果当前用户没有数据，回退加载全部样例数据，避免页面空白
-      if (!data || data.length === 0) {
-        data = await jobsApi.getAll(undefined)
+      if (!userIdNum) {
+        setJobs([])
+        setError('用户未登录')
+        return
       }
+      
+      const data = await jobsApi.getAll(userIdNum)
       setJobs(data || [])
       setError(null)
     } catch (err) {
       setError('获取职位数据失败')
       console.error('Error fetching jobs:', err)
+      setJobs([])
     } finally {
       setLoading(false)
     }
@@ -118,15 +121,19 @@ export function useReminders() {
       const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
       const userIdNum = userId ? parseInt(userId) : undefined
       
-      let data = await remindersApi.getAll(userIdNum)
-      if (!data || data.length === 0) {
-        data = await remindersApi.getAll(undefined)
+      if (!userIdNum) {
+        setReminders([])
+        setError('用户未登录')
+        return
       }
+      
+      const data = await remindersApi.getAll(userIdNum)
       setReminders(data || [])
       setError(null)
     } catch (err) {
       setError('获取提醒数据失败')
       console.error('Error fetching reminders:', err)
+      setReminders([])
     } finally {
       setLoading(false)
     }
@@ -254,6 +261,7 @@ export function useCompanyData() {
 
   const fetchCompanyData = async (companies: string[]) => {
     if (companies.length === 0) {
+      console.log('No companies to fetch data for')
       setCompanyData([])
       return
     }
@@ -261,16 +269,30 @@ export function useCompanyData() {
     try {
       setLoading(true)
       setError(null)
+      console.log(`Fetching company data for companies: ${companies.join(', ')}`)
       
-      const dataPromises = companies.map(company => companyDataApi.getByCompany(company))
+      const dataPromises = companies.map(async (company) => {
+        try {
+          const result = await companyDataApi.getByCompany(company)
+          console.log(`Result for ${company}:`, result)
+          return result
+        } catch (err) {
+          console.error(`Error fetching data for ${company}:`, err)
+          return null
+        }
+      })
+      
       const results = await Promise.all(dataPromises)
+      console.log('All company data results:', results)
       
       // 过滤掉null结果
       const validData = results.filter(Boolean) as CompanyData[]
+      console.log('Valid company data:', validData)
       setCompanyData(validData)
     } catch (err) {
-      setError('获取公司数据失败')
-      console.error('Error fetching company data:', err)
+      const errorMessage = '获取公司数据失败'
+      setError(errorMessage)
+      console.error(errorMessage, err)
       setCompanyData([])
     } finally {
       setLoading(false)
