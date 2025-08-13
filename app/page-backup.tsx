@@ -26,8 +26,6 @@ import { useJobs, useReminders, useInsights } from "@/lib/hooks"
 export default function JobSearchAssistant() {
   const [userName, setUserName] = useState("小明")
   const [isAddJobOpen, setIsAddJobOpen] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const router = useRouter()
 
   // 检查登录状态 - 只在客户端检查
@@ -81,14 +79,8 @@ export default function JobSearchAssistant() {
       alert("请先填写公司名称和职位名称")
       return
     }
-    const userId = localStorage.getItem("user_id")
-    if (!userId) {
-      alert("用户未登录")
-      return
-    }
     const job = {
       ...newJob,
-      user_id: parseInt(userId),
       applied_date: new Date().toISOString().split("T")[0],
       progress: 25,
       next_action: "跟进",
@@ -149,22 +141,13 @@ export default function JobSearchAssistant() {
   const today = new Date()
   const currentDate = today.getDate()
   const weekDays = ['日', '一', '二', '三', '四', '五', '六']
-  const weekDates: Date[] = []
+  const weekDates = []
   
   // 生成一周的日期
   for (let i = 0; i < 7; i++) {
     const date = new Date(today)
     date.setDate(today.getDate() - today.getDay() + i)
-    weekDates.push(date)
-  }
-
-  // 检查某天是否有任务
-  const hasTaskOnDate = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0]
-    return reminders.some(reminder => 
-      reminder.date === dateStr || 
-      reminder.date === '今天' && date.getDate() === today.getDate()
-    )
+    weekDates.push(date.getDate())
   }
 
   // 加载和错误处理
@@ -180,24 +163,24 @@ export default function JobSearchAssistant() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-background">
       {/* 顶部Header */}
-      <header className="bg-white/90 backdrop-blur-sm border-b border-blue-200 px-4 py-3">
+      <header className="bg-white border-b px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="border-2 border-blue-500 rounded-lg px-3 py-1 bg-gradient-to-r from-blue-500 to-indigo-600">
-              <span className="text-white font-bold text-lg">职得</span>
+            <div className="border-2 border-blue-500 rounded-lg px-3 py-1">
+              <span className="text-blue-600 font-bold text-lg">职得</span>
             </div>
           </div>
-          <div className="w-8 h-8 border border-blue-300 rounded-full bg-white shadow-sm"></div>
+          <div className="w-8 h-8 border border-gray-300 rounded-full bg-white"></div>
         </div>
       </header>
 
       <div className="px-4 py-6 space-y-6">
         {/* 问候和日历区域 */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-blue-100">
+        <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="mb-4">
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-2xl font-bold text-gray-900">
               {getGreeting()}, {userName}!
             </h1>
             <p className="text-gray-600 mt-1">
@@ -208,73 +191,36 @@ export default function JobSearchAssistant() {
           {/* 日历 */}
           <div className="mb-6">
             <div className="flex items-center space-x-2 mb-3">
-              <Calendar className="h-5 w-5 text-blue-600" />
+              <Calendar className="h-5 w-5 text-gray-600" />
               <div className="flex space-x-4">
-                {weekDays.map((day, index) => {
-                  const date = weekDates[index]
-                  const isToday = date.getDate() === currentDate
-                  const hasTask = hasTaskOnDate(date)
-                  const isSelected = selectedDate.getDate() === date.getDate() && 
-                                   selectedDate.getMonth() === date.getMonth() && 
-                                   selectedDate.getFullYear() === date.getFullYear()
-                  return (
-                    <div key={index} className="text-center relative">
-                      <div className="text-sm text-gray-600 mb-1">{day}</div>
-                      <div 
-                        className={`w-10 h-10 flex items-center justify-center rounded-full text-sm cursor-pointer transition-all duration-200 relative ${
-                          isToday 
-                            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg' 
-                            : isSelected
-                            ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
-                            : 'text-gray-700 hover:bg-blue-50'
-                        }`}
-                        onClick={() => {
-                          setSelectedDate(date)
-                          setIsCalendarOpen(false) // 关闭弹窗，直接显示在下方
-                        }}
-                      >
-                        {date.getDate()}
-                        {hasTask && (
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
-                        )}
-                      </div>
-                      {/* 当前日期的指向箭头 */}
-                      {isToday && (
-                        <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                          <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-blue-500"></div>
-                        </div>
-                      )}
+                {weekDays.map((day, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-sm text-gray-500 mb-1">{day}</div>
+                    <div className={`w-8 h-8 flex items-center justify-center rounded-full text-sm ${
+                      weekDates[index] === currentDate 
+                        ? 'bg-blue-500 text-white' 
+                        : 'text-gray-700'
+                    }`}>
+                      {weekDates[index]}
                     </div>
-                  )
-                })}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* 待办事项 */}
+          {/* 今日待办 */}
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-gray-800">
-              {selectedDate.getDate() === currentDate ? '今日待办:' : `${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日待办:`}
-            </h3>
+            <h3 className="text-lg font-semibold mb-3">今日待办:</h3>
             <div className="space-y-3">
               {reminders
-                .filter((r) => {
-                  // 根据选择的日期过滤待办
-                  if (selectedDate.getDate() === currentDate) {
-                    // 今天：显示未完成的待办
-                    return !r.completed
-                  } else {
-                    // 其他日期：显示该日期的待办
-                    const dateStr = selectedDate.toISOString().split('T')[0]
-                    return r.date === dateStr || r.date === '今天' && selectedDate.getDate() === currentDate
-                  }
-                })
+                .filter((r) => !r.completed)
                 .slice(0, 3)
                 .map((reminder) => (
-                  <div key={reminder.id} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200 shadow-sm">
+                  <div key={reminder.id} className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-gray-800">{reminder.title}</p>
+                        <p className="font-medium text-gray-900">{reminder.title}</p>
                         <p className="text-sm text-gray-600">时间: {reminder.time}</p>
                         <p className="text-sm text-gray-600">地点: {reminder.company}</p>
                       </div>
@@ -285,69 +231,60 @@ export default function JobSearchAssistant() {
                     </div>
                   </div>
                 ))}
-              {reminders.filter((r) => {
-                if (selectedDate.getDate() === currentDate) {
-                  return !r.completed
-                } else {
-                  const dateStr = selectedDate.toISOString().split('T')[0]
-                  return r.date === dateStr || r.date === '今天' && selectedDate.getDate() === currentDate
-                }
-              }).length === 0 && (
-                <div className="text-center py-6 text-gray-500">
-                  <Calendar className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                  <p>该日期暂无待办事项</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
 
         {/* 职位信息区域 */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-blue-100">
+        <div className="bg-white rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-800">职位信息</h2>
-            <Search className="h-5 w-5 text-blue-600" />
+            <h2 className="text-xl font-bold text-gray-900">职位信息</h2>
+            <Search className="h-5 w-5 text-gray-600" />
           </div>
 
-          {jobs.filter(job => job.progress < 100).length === 0 ? (
-            /* 空状态 - 新用户或全部完成 */
-            <div 
-              className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors bg-gradient-to-r from-blue-50 to-indigo-50"
-              onClick={() => setIsAddJobOpen(true)}
-            >
-              <Plus className="h-12 w-12 text-blue-400 mx-auto mb-4" />
+          {jobs.length === 0 ? (
+            /* 空状态 - 新用户 */
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <Plus className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 text-sm">
-                {jobs.length === 0 ? '请点击此处添加您的投递职位信息' : '恭喜！所有职位申请已完成，去OFFER页面查看结果'}
+                请点击此处添加您的投递职位信息
               </p>
-              {jobs.length > 0 && (
-                <Button 
-                  onClick={() => router.push("/tasks")}
-                  className="mt-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                >
-                  查看OFFER
-                </Button>
-              )}
             </div>
           ) : (
-                        /* 职位卡片列表 */
+            /* 职位卡片列表 */
             <div className="space-y-4">
-              {jobs.filter(job => job.progress < 100).map((job) => (
-                <Card key={job.id} className="hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-white to-blue-50 border border-blue-200">
+              {jobs.map((job) => (
+                <Card key={job.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
-                    <div className="mb-3">
-                      <h3 className="font-semibold text-lg text-gray-900">{job.company}</h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="font-semibold text-lg">{job.company}</h3>
+                        <p className="text-gray-600">{job.position}</p>
+                      </div>
+                      <Badge className={getStatusColor(job.status)}>{job.status}</Badge>
                     </div>
                     
-                    <div className="flex items-center justify-between mb-4">
-                      <p className="text-gray-600 font-medium">{job.position}</p>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-500">进度</span>
-                        <span className="text-sm font-medium text-blue-700">{job.progress}%</span>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div className="flex justify-between">
+                        <span>申请日期:</span>
+                        <span>{job.applied_date}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>工作地点:</span>
+                        <span>{job.location}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>薪资:</span>
+                        <span>{job.salary}</span>
                       </div>
                     </div>
-                    
-                    <div className="mb-4">
-                      <Progress value={job.progress} className="h-2 bg-blue-100" />
+
+                    <div className="mt-4">
+                      <div className="flex justify-between text-sm mb-2">
+                        <span>申请进度</span>
+                        <span>{job.progress}%</span>
+                      </div>
+                      <Progress value={job.progress} className="h-2" />
                     </div>
 
                     <div className="flex space-x-2 mt-4">
@@ -437,8 +374,14 @@ export default function JobSearchAssistant() {
             </div>
           )}
 
-          {/* 添加职位对话框 */}
+          {/* 添加职位按钮 */}
           <Dialog open={isAddJobOpen} onOpenChange={setIsAddJobOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full mt-4" size="lg">
+                <Plus className="h-4 w-4 mr-2" />
+                添加职位申请
+              </Button>
+            </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>添加新的职位申请</DialogTitle>
@@ -543,58 +486,15 @@ export default function JobSearchAssistant() {
               </div>
             </DialogContent>
           </Dialog>
-
-          {/* 日历详情对话框 */}
-          <Dialog open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  {selectedDate.toLocaleDateString('zh-CN', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })} 的任务
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-3">
-                {reminders
-                  .filter((reminder) => {
-                    const reminderDate = reminder.date === '今天' ? today : new Date(reminder.date)
-                    return reminderDate.toDateString() === selectedDate.toDateString()
-                  })
-                  .map((reminder) => (
-                    <div key={reminder.id} className="bg-gray-50 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-gray-900">{reminder.title}</p>
-                          <p className="text-sm text-gray-600">时间: {reminder.time}</p>
-                          <p className="text-sm text-gray-600">地点: {reminder.company}</p>
-                        </div>
-                        <Checkbox
-                          checked={reminder.completed}
-                          onCheckedChange={() => handleToggleReminder(reminder.id, !reminder.completed)}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                {reminders.filter((reminder) => {
-                  const reminderDate = reminder.date === '今天' ? today : new Date(reminder.date)
-                  return reminderDate.toDateString() === selectedDate.toDateString()
-                }).length === 0 && (
-                  <p className="text-gray-500 text-center py-4">这一天没有任务</p>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
 
       {/* 底部导航栏 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-blue-200 px-4 py-3 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-3">
         <div className="flex items-center justify-between max-w-md mx-auto">
           <Button 
             variant="ghost" 
-            className="flex flex-col items-center space-y-1 text-gray-600 hover:text-blue-600 transition-colors"
+            className="flex flex-col items-center space-y-1"
             onClick={() => router.push("/insights")}
           >
             <span className="text-sm">洞察</span>
@@ -602,14 +502,14 @@ export default function JobSearchAssistant() {
           <Button 
             variant="ghost" 
             size="icon"
-            className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-lg transition-all duration-200"
+            className="w-12 h-12 rounded-full bg-blue-500 text-white hover:bg-blue-600"
             onClick={() => setIsAddJobOpen(true)}
           >
             <Plus className="h-6 w-6" />
           </Button>
           <Button 
             variant="ghost" 
-            className="flex flex-col items-center space-y-1 text-gray-600 hover:text-blue-600 transition-colors"
+            className="flex flex-col items-center space-y-1"
             onClick={() => router.push("/tasks")}
           >
             <span className="text-sm">OFFER</span>

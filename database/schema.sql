@@ -101,4 +101,45 @@ INSERT INTO reminders (user_id, title, time, date, company, type, completed, pri
 INSERT INTO insights (title, description, type, company, content, tags, read_time) VALUES
 ('腾讯面试攻略', '基于最新面试经验总结的技巧分享', '面试', '腾讯', '腾讯面试注重基础能力和项目经验。技术面试通常包含算法题、系统设计和项目深挖。建议准备常见的前端算法题，了解微信生态的技术架构，准备好详细的项目介绍。行为面试会关注团队协作和学习能力。', ARRAY['面试技巧', '算法', '项目经验'], '5分钟'),
 ('阿里巴巴企业文化深度解析', '了解阿里的价值观和工作氛围', '文化', '阿里巴巴', '阿里巴巴秉承"让天下没有难做的生意"的使命，注重客户第一、团队合作、拥抱变化等价值观。工作节奏较快，但提供良好的成长机会。面试时要体现出对用户体验的关注和商业思维。', ARRAY['企业文化', '价值观', '工作环境'], '8分钟'),
-('字节跳动相似职位推荐', '发现了3个匹配您背景的新职位', '职位', '字节跳动', '基于您的技能匹配，推荐以下职位：1. 抖音前端工程师 - 负责短视频相关功能开发；2. 今日头条全栈工程师 - 负责推荐系统前端展示；3. 飞书前端专家 - 负责协作工具的用户体验优化。', ARRAY['职位推荐', '技能匹配', '新机会'], '3分钟'); 
+('字节跳动相似职位推荐', '发现了3个匹配您背景的新职位', '职位', '字节跳动', '基于您的技能匹配，推荐以下职位：1. 抖音前端工程师 - 负责短视频相关功能开发；2. 今日头条全栈工程师 - 负责推荐系统前端展示；3. 飞书前端专家 - 负责协作工具的用户体验优化。', ARRAY['职位推荐', '技能匹配', '新机会'], '3分钟');
+
+-- 启用 RLS (Row Level Security)
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reminders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE insights ENABLE ROW LEVEL SECURITY;
+ALTER TABLE company_data ENABLE ROW LEVEL SECURITY;
+ALTER TABLE position_insights ENABLE ROW LEVEL SECURITY;
+
+-- 创建 RLS 策略
+-- users 表策略
+CREATE POLICY "Users can view and manage their own data" ON users
+  FOR ALL USING (true);
+
+-- jobs 表策略
+CREATE POLICY "Users can view and manage their own jobs" ON jobs
+  FOR ALL USING (user_id = (SELECT id FROM users WHERE username = current_user) OR user_id IS NULL);
+
+-- reminders 表策略
+CREATE POLICY "Users can view and manage their own reminders" ON reminders
+  FOR ALL USING (user_id = (SELECT id FROM users WHERE username = current_user) OR user_id IS NULL);
+
+-- insights 表策略
+CREATE POLICY "Users can view all insights" ON insights
+  FOR SELECT USING (true);
+
+-- company_data 表策略
+CREATE POLICY "Users can view all company data" ON company_data
+  FOR SELECT USING (true);
+
+-- position_insights 表策略
+CREATE POLICY "Users can view all position insights" ON position_insights
+  FOR SELECT USING (true);
+
+-- 允许 anon 和 authenticated 角色访问
+GRANT ALL ON users TO anon, authenticated;
+GRANT ALL ON jobs TO anon, authenticated;
+GRANT ALL ON reminders TO anon, authenticated;
+GRANT ALL ON insights TO anon, authenticated;
+GRANT ALL ON company_data TO anon, authenticated;
+GRANT ALL ON position_insights TO anon, authenticated; 

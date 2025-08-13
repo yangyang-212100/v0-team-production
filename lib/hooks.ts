@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { jobsApi, remindersApi, insightsApi, companyDataApi, positionInsightsApi } from './database'
 import { Job, Reminder, Insight, CompanyData, PositionInsight } from './types'
 
@@ -7,7 +7,7 @@ export function useJobs() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     try {
       setLoading(true)
       // 获取当前用户ID
@@ -30,9 +30,9 @@ export function useJobs() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const addJob = async (job: Omit<Job, 'id' | 'created_at' | 'updated_at'>) => {
+  const addJob = useCallback(async (job: Omit<Job, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       // 获取当前用户ID
       const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
@@ -47,7 +47,7 @@ export function useJobs() {
       console.log('Creating job payload:', jobWithUserId)
       const newJob = await jobsApi.create(jobWithUserId)
       if (newJob) {
-        setJobs([newJob, ...jobs])
+        setJobs(prevJobs => [newJob, ...prevJobs])
         
         // 触发AI生成洞察
         try {
@@ -64,13 +64,13 @@ export function useJobs() {
       console.error('Error adding job:', err)
     }
     return null
-  }
+  }, [])
 
-  const updateJobStatus = async (id: number, status: string, progress: number) => {
+  const updateJobStatus = useCallback(async (id: number, status: string, progress: number) => {
     try {
       const updatedJob = await jobsApi.updateStatus(id, status, progress)
       if (updatedJob) {
-        setJobs(jobs.map(job => job.id === id ? updatedJob : job))
+        setJobs(prevJobs => prevJobs.map(job => job.id === id ? updatedJob : job))
         return updatedJob
       }
     } catch (err) {
@@ -78,13 +78,13 @@ export function useJobs() {
       console.error('Error updating job:', err)
     }
     return null
-  }
+  }, [])
 
-  const deleteJob = async (id: number) => {
+  const deleteJob = useCallback(async (id: number) => {
     try {
       const success = await jobsApi.delete(id)
       if (success) {
-        setJobs(jobs.filter(job => job.id !== id))
+        setJobs(prevJobs => prevJobs.filter(job => job.id !== id))
         return true
       }
     } catch (err) {
@@ -92,7 +92,7 @@ export function useJobs() {
       console.error('Error deleting job:', err)
     }
     return false
-  }
+  }, [])
 
   useEffect(() => {
     fetchJobs()
@@ -114,7 +114,7 @@ export function useReminders() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchReminders = async () => {
+  const fetchReminders = useCallback(async () => {
     try {
       setLoading(true)
       // 获取当前用户ID
@@ -137,9 +137,9 @@ export function useReminders() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const addReminder = async (reminder: Omit<Reminder, 'id' | 'created_at' | 'updated_at'>) => {
+  const addReminder = useCallback(async (reminder: Omit<Reminder, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       // 获取当前用户ID
       const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
@@ -153,7 +153,7 @@ export function useReminders() {
       const reminderWithUserId = { ...reminder, user_id: userIdNum }
       const newReminder = await remindersApi.create(reminderWithUserId)
       if (newReminder) {
-        setReminders([newReminder, ...reminders])
+        setReminders(prevReminders => [newReminder, ...prevReminders])
         return newReminder
       }
     } catch (err) {
@@ -161,13 +161,13 @@ export function useReminders() {
       console.error('Error adding reminder:', err)
     }
     return null
-  }
+  }, [])
 
-  const toggleReminder = async (id: number, completed: boolean) => {
+  const toggleReminder = useCallback(async (id: number, completed: boolean) => {
     try {
       const updatedReminder = await remindersApi.toggleCompleted(id, completed)
       if (updatedReminder) {
-        setReminders(reminders.map(reminder => 
+        setReminders(prevReminders => prevReminders.map(reminder => 
           reminder.id === id ? updatedReminder : reminder
         ))
         return updatedReminder
@@ -177,13 +177,13 @@ export function useReminders() {
       console.error('Error updating reminder:', err)
     }
     return null
-  }
+  }, [])
 
-  const deleteReminder = async (id: number) => {
+  const deleteReminder = useCallback(async (id: number) => {
     try {
       const success = await remindersApi.delete(id)
       if (success) {
-        setReminders(reminders.filter(reminder => reminder.id !== id))
+        setReminders(prevReminders => prevReminders.filter(reminder => reminder.id !== id))
         return true
       }
     } catch (err) {
@@ -191,7 +191,7 @@ export function useReminders() {
       console.error('Error deleting reminder:', err)
     }
     return false
-  }
+  }, [])
 
   useEffect(() => {
     fetchReminders()
@@ -213,7 +213,7 @@ export function useInsights() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchInsights = async () => {
+  const fetchInsights = useCallback(async () => {
     try {
       setLoading(true)
       const data = await insightsApi.getAll()
@@ -225,13 +225,13 @@ export function useInsights() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const addInsight = async (insight: Omit<Insight, 'id' | 'created_at'>) => {
+  const addInsight = useCallback(async (insight: Omit<Insight, 'id' | 'created_at'>) => {
     try {
       const newInsight = await insightsApi.create(insight)
       if (newInsight) {
-        setInsights([newInsight, ...insights])
+        setInsights(prevInsights => [newInsight, ...prevInsights])
         return newInsight
       }
     } catch (err) {
@@ -239,7 +239,7 @@ export function useInsights() {
       console.error('Error adding insight:', err)
     }
     return null
-  }
+  }, [])
 
   useEffect(() => {
     fetchInsights()
@@ -259,7 +259,7 @@ export function useCompanyData() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchCompanyData = async (companies: string[]) => {
+  const fetchCompanyData = useCallback(async (companies: string[]) => {
     if (companies.length === 0) {
       console.log('No companies to fetch data for')
       setCompanyData([])
@@ -297,7 +297,7 @@ export function useCompanyData() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   return {
     companyData,
@@ -312,7 +312,7 @@ export function usePositionInsights() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchPositionInsights = async (userId?: number) => {
+  const fetchPositionInsights = useCallback(async (userId?: number) => {
     try {
       setLoading(true)
       if (userId) {
@@ -328,7 +328,7 @@ export function usePositionInsights() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   return {
     positionInsights,

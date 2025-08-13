@@ -5,19 +5,29 @@ import { Job, Reminder, Insight, CompanyData, PositionInsight } from './types'
 export const jobsApi = {
   // 获取所有职位
   async getAll(userId?: number): Promise<Job[]> {
-    const queryBuilder = supabase
-      .from('jobs')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    const { data, error } = await (userId ? queryBuilder.eq('user_id', userId) : queryBuilder)
-    
-    if (error) {
-      console.error('Error fetching jobs:', error)
+    try {
+      const queryBuilder = supabase
+        .from('jobs')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      const { data, error } = await (userId ? queryBuilder.eq('user_id', userId) : queryBuilder)
+      
+      if (error) {
+        console.error('Error fetching jobs:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        })
+        return []
+      }
+      
+      return data || []
+    } catch (err) {
+      console.error('Unexpected error fetching jobs:', err)
       return []
     }
-    
-    return data || []
   },
 
   // 添加新职位
@@ -79,19 +89,29 @@ export const jobsApi = {
 export const remindersApi = {
   // 获取所有提醒
   async getAll(userId?: number): Promise<Reminder[]> {
-    const queryBuilder = supabase
-      .from('reminders')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    const { data, error } = await (userId ? queryBuilder.eq('user_id', userId) : queryBuilder)
-    
-    if (error) {
-      console.error('Error fetching reminders:', error)
+    try {
+      const queryBuilder = supabase
+        .from('reminders')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      const { data, error } = await (userId ? queryBuilder.eq('user_id', userId) : queryBuilder)
+      
+      if (error) {
+        console.error('Error fetching reminders:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        })
+        return []
+      }
+      
+      return data || []
+    } catch (err) {
+      console.error('Unexpected error fetching reminders:', err)
       return []
     }
-    
-    return data || []
   },
 
   // 添加新提醒
@@ -340,6 +360,10 @@ export const positionInsightsApi = {
   // 获取用户所有公司的岗位洞察
   async getByUserJobs(userId: number): Promise<PositionInsight[]> {
     try {
+      if (!userId) {
+        console.log('fetchByUserJobs skipped: no userId')
+        return []
+      }
       console.log(`Fetching position insights for user: ${userId}`)
       
       // First get all companies associated with the user's jobs
@@ -349,7 +373,18 @@ export const positionInsightsApi = {
         .eq('user_id', userId)
       
       if (jobsError) {
-        console.error('Error fetching user jobs for insights:', jobsError)
+        const code = (jobsError as any)?.code
+        const message = (jobsError as any)?.message
+        if (code === 'PGRST116' || message?.includes?.('No rows')) {
+          console.log('No jobs found for user (no rows)')
+          return []
+        }
+        console.warn('Error fetching user jobs for insights:', {
+          code,
+          message,
+          details: (jobsError as any)?.details,
+          hint: (jobsError as any)?.hint,
+        })
         return []
       }
       
@@ -358,7 +393,11 @@ export const positionInsightsApi = {
         return []
       }
       
-      const companies = userJobs.map(job => job.company)
+      const companies = Array.from(new Set(userJobs.map(job => job.company).filter(Boolean)))
+      if (companies.length === 0) {
+        console.log('No companies extracted from user jobs')
+        return []
+      }
       console.log('User companies:', companies)
       
       // Then get position insights for these companies
@@ -369,12 +408,11 @@ export const positionInsightsApi = {
         .order('created_at', { ascending: false })
       
       if (error) {
-        console.error('Error fetching user position insights:', error)
-        console.error('Error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
+        console.warn('Error fetching user position insights:', {
+          code: (error as any)?.code,
+          message: (error as any)?.message,
+          details: (error as any)?.details,
+          hint: (error as any)?.hint
         })
         return []
       }
