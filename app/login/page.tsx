@@ -37,7 +37,7 @@ export default function LoginPage() {
       // 登录成功，保存用户信息到 localStorage
       localStorage.setItem("user_id", user.id)
       localStorage.setItem("username", user.username)
-      router.push("/")
+      router.push("/dashboard")
     } catch (err) {
       setLoading(false)
       setError("登录失败，请重试")
@@ -47,7 +47,15 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <Card className="w-full max-w-md">
-        <CardHeader>
+        <CardHeader className="text-center">
+          {/* 登录图片 */}
+          <div className="flex justify-center mb-4">
+            <img 
+              src="https://i.imgur.com/ePgOfEh.png" 
+              alt="登录图片" 
+              className="w-32 h-32 object-contain"
+            />
+          </div>
           <CardTitle>登录账号</CardTitle>
         </CardHeader>
         <CardContent>
