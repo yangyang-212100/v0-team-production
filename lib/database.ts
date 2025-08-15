@@ -53,10 +53,25 @@ export const jobsApi = {
   },
 
   // 更新职位状态
-  async updateStatus(id: number, status: string, progress: number): Promise<Job | null> {
+  async updateStatus(id: number, status: string, progress: number, interviewDatetime?: string, interviewLocationType?: string, interviewLocation?: string, salary?: string): Promise<Job | null> {
+    const updateData: any = { status, progress }
+    
+    if (interviewDatetime) {
+      updateData.interview_datetime = interviewDatetime
+    }
+    if (interviewLocationType) {
+      updateData.interview_location_type = interviewLocationType
+    }
+    if (interviewLocation) {
+      updateData.interview_location = interviewLocation
+    }
+    if (salary) {
+      updateData.salary = salary
+    }
+    
     const { data, error } = await supabase
       .from('jobs')
-      .update({ status, progress })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()

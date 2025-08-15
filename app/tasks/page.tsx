@@ -30,15 +30,21 @@ export default function OfferPage() {
   }, [jobs])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-[#F5F8FA] relative overflow-hidden">
+      {/* 背景装饰 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#E0E9F0]/30 rounded-full blur-xl"></div>
+        <div className="absolute top-1/3 -left-16 w-32 h-32 bg-[#B4C2CD]/20 rounded-full blur-lg"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-[#E0E9F0]/40 rounded-full blur-md"></div>
+      </div>
       {/* Header */}
-      <div className="bg-white/90 backdrop-blur-sm border-b border-blue-200 px-4 py-3">
+                             <div className="bg-[#F8FAFC]/95 backdrop-blur-sm border-b border-[#E0E9F0] px-4 py-3 relative z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               onClick={() => router.push("/")}
-              className="text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+              className="text-gray-600 hover:text-[#B4C2CD] hover:bg-[#E0E9F0] transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               返回主页
@@ -51,19 +57,19 @@ export default function OfferPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+             <div className="container mx-auto px-4 py-8 pb-24">
         {completedJobs.length === 0 ? (
           /* 空状态 - 暂无OFFER */
           <div className="text-center py-16">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-blue-100 max-w-md mx-auto">
-              <Trophy className="h-16 w-16 text-blue-400 mx-auto mb-4" />
+                         <div className="bg-[#F8FAFC]/95 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-[#E0E9F0] max-w-md mx-auto relative z-10">
+              <Trophy className="h-16 w-16 text-[#B4C2CD] mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2 text-gray-800">暂无OFFER</h3>
               <p className="text-gray-600 mb-6">
                 当您的职位申请进度达到100%时，将在这里显示
               </p>
               <Button 
                 onClick={() => router.push("/")}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 rounded-xl"
               >
                 去申请职位
               </Button>
@@ -79,57 +85,57 @@ export default function OfferPage() {
               <p className="text-gray-600">以下是您成功获得的职位机会</p>
             </div>
             
-            <div className="grid gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {completedJobs.map((job) => (
-                <Card key={job.id} className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:shadow-xl transition-all duration-200">
+                                 <Card key={job.id} className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl hover:shadow-xl transition-all duration-300 relative z-10">
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                          <CheckCircle2 className="h-6 w-6 text-white" />
+                        <div className="w-12 h-12 bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] rounded-full flex items-center justify-center">
+                          <CheckCircle2 className="h-6 w-6 text-gray-600" />
                         </div>
                         <div>
                           <CardTitle className="text-xl text-gray-800">{job.company}</CardTitle>
                           <p className="text-gray-600 font-medium">{job.position}</p>
                         </div>
                       </div>
-                      <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1">
-                        OFFER
-                      </Badge>
+                                             <Badge className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] text-gray-700 px-3 py-1 border border-[#B4C2CD]">
+                         OFFER
+                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* 工作地点 */}
-                      <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
-                        <MapPin className="h-5 w-5 text-blue-600" />
+                                             {/* 工作地点 */}
+                       <div className="flex items-center space-x-2 p-3 bg-[#E0E9F0]/30 rounded-lg">
+                         <MapPin className="h-5 w-5 text-[#B4C2CD]" />
                         <div>
                           <p className="text-sm text-gray-500">工作地点</p>
                           <p className="font-medium text-gray-800">{job.location || '未指定'}</p>
                         </div>
                       </div>
                       
-                      {/* 薪资信息 */}
-                      <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg">
-                        <DollarSign className="h-5 w-5 text-green-600" />
+                                             {/* 薪资信息 */}
+                       <div className="flex items-center space-x-2 p-3 bg-[#E0E9F0]/30 rounded-lg">
+                         <DollarSign className="h-5 w-5 text-[#B4C2CD]" />
                         <div>
                           <p className="text-sm text-gray-500">薪资范围</p>
                           <p className="font-medium text-gray-800">{job.salary || '面议'}</p>
                         </div>
                       </div>
                       
-                      {/* 职位类型 */}
-                      <div className="flex items-center space-x-2 p-3 bg-purple-50 rounded-lg">
-                        <Building2 className="h-5 w-5 text-purple-600" />
+                                             {/* 职位类型 */}
+                       <div className="flex items-center space-x-2 p-3 bg-[#E0E9F0]/30 rounded-lg">
+                         <Building2 className="h-5 w-5 text-[#B4C2CD]" />
                         <div>
                           <p className="text-sm text-gray-500">职位类型</p>
                           <p className="font-medium text-gray-800">{job.type || '全职'}</p>
                         </div>
                       </div>
                       
-                      {/* 申请状态 */}
-                      <div className="flex items-center space-x-2 p-3 bg-orange-50 rounded-lg">
-                        <Trophy className="h-5 w-5 text-orange-600" />
+                                             {/* 申请状态 */}
+                       <div className="flex items-center space-x-2 p-3 bg-[#E0E9F0]/30 rounded-lg">
+                         <Trophy className="h-5 w-5 text-[#B4C2CD]" />
                         <div>
                           <p className="text-sm text-gray-500">申请状态</p>
                           <p className="font-medium text-gray-800">{job.status || '已完成'}</p>
@@ -137,24 +143,10 @@ export default function OfferPage() {
                       </div>
                     </div>
                     
-                    {/* 职位描述 */}
-                    {job.description && (
-                      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                        <h4 className="font-medium text-gray-800 mb-2">职位描述</h4>
-                        <p className="text-gray-600 text-sm">{job.description}</p>
-                      </div>
-                    )}
+                                         
                     
-                    {/* 职位要求 */}
-                    {job.requirements && (
-                      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                        <h4 className="font-medium text-gray-800 mb-2">职位要求</h4>
-                        <p className="text-gray-600 text-sm">{job.requirements}</p>
-                      </div>
-                    )}
-                    
-                    {/* 申请日期 */}
-                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                         {/* 申请日期 */}
+                     <div className="mt-4 pt-4 border-t border-[#E0E9F0]">
                       <p className="text-sm text-gray-500">
                         申请日期: {job.applied_date ? new Date(job.applied_date).toLocaleDateString('zh-CN') : '未记录'}
                       </p>

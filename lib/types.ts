@@ -13,6 +13,10 @@ export interface Job {
   salary: string
   location: string
   type: string
+  url?: string
+  interview_datetime?: string
+  interview_location_type?: string
+  interview_location?: string
   created_at?: string
   updated_at?: string
 }

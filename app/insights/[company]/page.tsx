@@ -165,7 +165,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
       return (
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#E0E9F0] border-t-[#B4C2CD] mx-auto mb-4"></div>
             <p className="text-muted-foreground text-lg">正在加载AI生成的内容...</p>
             <p className="text-sm text-gray-500 mt-2">请稍候，这可能需要几秒钟</p>
           </div>
@@ -177,7 +177,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
         return (
           <div>
             <h2 className="text-2xl font-bold mb-6 flex items-center">
-              <Users className="h-6 w-6 mr-3 text-blue-600" />
+              <Users className="h-6 w-6 mr-3 text-[#B4C2CD]" />
               企业文化
             </h2>
             
@@ -186,10 +186,10 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
               {((currentCompanyData.culture_json?.core_values && currentCompanyData.culture_json.core_values.length) || (currentCompanyData.culture_core_values && currentCompanyData.culture_core_values.trim())) && (
                 <div>
                   <h3 className="text-lg font-semibold mb-4 flex items-center">
-                    <Users className="h-5 w-5 mr-2 text-blue-600" />
+                    <Users className="h-5 w-5 mr-2 text-[#B4C2CD]" />
                     核心价值观
                   </h3>
-                  <Card>
+                  <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-sm">
                     <CardContent className="pt-6">
                       {currentCompanyData.culture_json?.core_values?.length ? (
                         <ul className="text-sm leading-7 list-disc pl-6 space-y-1">
@@ -200,7 +200,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
                       ) : (
                         <div className="text-sm leading-relaxed space-y-4">
                           {formatContent(currentCompanyData.culture_core_values).split('\n\n').map((paragraph, index) => (
-                            <div key={index} className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-200">
+                            <div key={index} className="mb-4 p-3 bg-[#E0E9F0]/30 rounded-lg border-l-4 border-[#B4C2CD]">
                               <div className="text-gray-800 whitespace-pre-line leading-6">
                                 {paragraph}
                               </div>
@@ -217,10 +217,10 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
               {((currentCompanyData.culture_json?.work_environment && currentCompanyData.culture_json.work_environment.length) || (currentCompanyData.culture_work_environment && currentCompanyData.culture_work_environment.trim())) && (
                 <div>
                   <h3 className="text-lg font-semibold mb-4 flex items-center">
-                    <Users className="h-5 w-5 mr-2 text-green-600" />
+                    <Users className="h-5 w-5 mr-2 text-[#B4C2CD]" />
                     工作氛围
                   </h3>
-                  <Card>
+                  <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-sm">
                     <CardContent className="pt-6">
                       {currentCompanyData.culture_json?.work_environment?.length ? (
                         <ul className="text-sm leading-7 list-disc pl-6 space-y-1">
@@ -231,7 +231,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
                       ) : (
                         <div className="text-sm leading-relaxed space-y-4">
                           {formatContent(currentCompanyData.culture_work_environment).split('\n\n').map((paragraph, index) => (
-                            <div key={index} className="mb-4 p-3 bg-green-50 rounded-lg border-l-4 border-green-200">
+                            <div key={index} className="mb-4 p-3 bg-[#E0E9F0]/30 rounded-lg border-l-4 border-[#B4C2CD]">
                               <div className="text-gray-800 whitespace-pre-line leading-6">
                                 {paragraph}
                               </div>
@@ -248,10 +248,10 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
               {((currentCompanyData.culture_json?.benefits && currentCompanyData.culture_json.benefits.length) || (currentCompanyData.culture_benefits && currentCompanyData.culture_benefits.trim())) && (
                 <div>
                   <h3 className="text-lg font-semibold mb-4 flex items-center">
-                    <Users className="h-5 w-5 mr-2 text-purple-600" />
+                    <Users className="h-5 w-5 mr-2 text-[#B4C2CD]" />
                     福利待遇
                   </h3>
-                  <Card>
+                  <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-sm">
                     <CardContent className="pt-6">
                       {currentCompanyData.culture_json?.benefits?.length ? (
                         <ul className="text-sm leading-7 list-disc pl-6 space-y-1">
@@ -262,7 +262,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
                       ) : (
                         <div className="text-sm leading-relaxed space-y-4">
                           {formatContent(currentCompanyData.culture_benefits).split('\n\n').map((paragraph, index) => (
-                            <div key={index} className="mb-4 p-3 bg-purple-50 rounded-lg border-l-4 border-purple-200">
+                            <div key={index} className="mb-4 p-3 bg-[#E0E9F0]/30 rounded-lg border-l-4 border-[#B4C2CD]">
                               <div className="text-gray-800 whitespace-pre-line leading-6">
                                 {paragraph}
                               </div>
@@ -580,8 +580,14 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-[#F5F8FA] relative overflow-hidden">
+      {/* 背景装饰 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#E0E9F0]/30 rounded-full blur-xl"></div>
+        <div className="absolute top-1/3 -left-16 w-32 h-32 bg-[#B4C2CD]/20 rounded-full blur-lg"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-[#E0E9F0]/40 rounded-full blur-md"></div>
+      </div>
+      <div className="container mx-auto px-4 py-8 pb-24">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
@@ -614,7 +620,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <Card>
+            <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-lg relative z-10">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Building2 className="h-5 w-5 mr-2" />
@@ -678,7 +684,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <Card>
+            <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-lg relative z-10">
               <CardContent className="pt-6">
                 {renderContent()}
               </CardContent>

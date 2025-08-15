@@ -121,3 +121,112 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 自定义日期和时间选择器样式 */
+input[type="date"],
+input[type="time"] {
+  color: #374151 !important;
+  background-color: white !important;
+  border-color: #B4C2CD !important;
+}
+
+input[type="date"]:focus,
+input[type="time"]:focus {
+  border-color: #E0E9F0 !important;
+  box-shadow: 0 0 0 2px rgba(224, 233, 240, 0.2) !important;
+  outline: none !important;
+}
+
+/* 日期和时间选择器的日历图标颜色 */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5) sepia(1) saturate(5) hue-rotate(200deg);
+  cursor: pointer;
+}
+
+/* 确保选择器在主题背景下可见 */
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+  color: #374151 !important;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+  color: #374151 !important;
+}
+
+/* 修改日期时间选择器的选中颜色为主题色 */
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  filter: invert(0.4) sepia(1) saturate(3) hue-rotate(200deg);
+}
+
+/* 修改日期时间选择器弹出框的选中颜色 */
+input[type="date"]::-webkit-datetime-edit-day-field:focus,
+input[type="date"]::-webkit-datetime-edit-month-field:focus,
+input[type="date"]::-webkit-datetime-edit-year-field:focus,
+input[type="time"]::-webkit-datetime-edit-hour-field:focus,
+input[type="time"]::-webkit-datetime-edit-minute-field:focus {
+  background-color: #E0E9F0 !important;
+  color: #374151 !important;
+}
+
+/* 修改日期时间选择器弹出框的选中背景色 */
+input[type="date"]::-webkit-calendar-picker-indicator:focus,
+input[type="time"]::-webkit-calendar-picker-indicator:focus {
+  background-color: #E0E9F0 !important;
+}
+
+/* 全局修改日期时间选择器的选中颜色 */
+::-webkit-calendar-picker {
+  background-color: white !important;
+}
+
+::-webkit-calendar-picker .selected {
+  background-color: #E0E9F0 !important;
+  color: #374151 !important;
+}
+
+::-webkit-calendar-picker .today {
+  background-color: #B4C2CD !important;
+  color: white !important;
+}
+
+/* 强制覆盖日期时间选择器的选中颜色 */
+input[type="date"]::-webkit-datetime-edit-day-field[aria-valuetext]:focus,
+input[type="date"]::-webkit-datetime-edit-month-field[aria-valuetext]:focus,
+input[type="date"]::-webkit-datetime-edit-year-field[aria-valuetext]:focus,
+input[type="time"]::-webkit-datetime-edit-hour-field[aria-valuetext]:focus,
+input[type="time"]::-webkit-datetime-edit-minute-field[aria-valuetext]:focus {
+  background-color: #E0E9F0 !important;
+  color: #374151 !important;
+}
+
+/* 覆盖日期时间选择器的默认选中样式 */
+input[type="date"]::-webkit-datetime-edit-day-field:in-range,
+input[type="date"]::-webkit-datetime-edit-month-field:in-range,
+input[type="date"]::-webkit-datetime-edit-year-field:in-range {
+  background-color: #E0E9F0 !important;
+  color: #374151 !important;
+}
+
+/* 覆盖时间选择器的选中样式 */
+input[type="time"]::-webkit-datetime-edit-hour-field:in-range,
+input[type="time"]::-webkit-datetime-edit-minute-field:in-range {
+  background-color: #E0E9F0 !important;
+  color: #374151 !important;
+}
+
+/* 使用更强的选择器覆盖默认样式 */
+input[type="date"]::-webkit-datetime-edit-day-field[aria-valuetext],
+input[type="date"]::-webkit-datetime-edit-month-field[aria-valuetext],
+input[type="date"]::-webkit-datetime-edit-year-field[aria-valuetext] {
+  background-color: #E0E9F0 !important;
+  color: #374151 !important;
+}
+
+input[type="time"]::-webkit-datetime-edit-hour-field[aria-valuetext],
+input[type="time"]::-webkit-datetime-edit-minute-field[aria-valuetext] {
+  background-color: #E0E9F0 !important;
+  color: #374151 !important;
+}

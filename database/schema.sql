@@ -23,6 +23,10 @@ CREATE TABLE IF NOT EXISTS jobs (
   salary VARCHAR(100),
   location VARCHAR(255),
   type VARCHAR(50) DEFAULT '全职',
+  url TEXT,
+  interview_datetime TIMESTAMP WITH TIME ZONE,
+  interview_location_type VARCHAR(20) DEFAULT '线下',
+  interview_location TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

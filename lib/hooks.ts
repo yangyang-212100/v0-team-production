@@ -32,7 +32,7 @@ export function useJobs() {
     }
   }, [])
 
-  const addJob = useCallback(async (job: Omit<Job, 'id' | 'created_at' | 'updated_at'>) => {
+  const addJob = useCallback(async (job: Omit<Job, 'id' | 'created_at' | 'updated_at'>, generateInsight: boolean = false) => {
     try {
       // 获取当前用户ID
       const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
@@ -43,18 +43,19 @@ export function useJobs() {
         return null
       }
       
-      const jobWithUserId = { ...job, user_id: userIdNum }
-      console.log('Creating job payload:', jobWithUserId)
-      const newJob = await jobsApi.create(jobWithUserId)
+      console.log('Creating job payload:', job)
+      const newJob = await jobsApi.create(job)
       if (newJob) {
         setJobs(prevJobs => [newJob, ...prevJobs])
         
-        // 触发AI生成洞察
-        try {
-          await generateInsights(job.company, job.position)
-        } catch (insightError) {
-          console.error('Error generating insights:', insightError)
-          // 不影响职位添加，只记录错误
+        // 只有在需要时才触发AI生成洞察
+        if (generateInsight) {
+          try {
+            await generateInsights(job.company, job.position)
+          } catch (insightError) {
+            console.error('Error generating insights:', insightError)
+            // 不影响职位添加，只记录错误
+          }
         }
         
         return newJob
@@ -66,9 +67,9 @@ export function useJobs() {
     return null
   }, [])
 
-  const updateJobStatus = useCallback(async (id: number, status: string, progress: number) => {
+  const updateJobStatus = useCallback(async (id: number, status: string, progress: number, interviewDatetime?: string, interviewLocationType?: string, interviewLocation?: string, salary?: string) => {
     try {
-      const updatedJob = await jobsApi.updateStatus(id, status, progress)
+      const updatedJob = await jobsApi.updateStatus(id, status, progress, interviewDatetime, interviewLocationType, interviewLocation, salary)
       if (updatedJob) {
         setJobs(prevJobs => prevJobs.map(job => job.id === id ? updatedJob : job))
         return updatedJob
