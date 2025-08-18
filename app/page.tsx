@@ -24,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Bell, Briefcase, Clock, MessageSquare, Mic, Plus, Users, Building2, Send, BarChart3, CheckCircle2, Circle, AlertCircle, Eye, Edit, ExternalLink, AlarmClock, Moon, Sun, TrendingUp, Calendar, Target, FileText, Settings, Search, LogOut, User, ChevronDown, Trash2, MapPin, DollarSign, X } from 'lucide-react'
 import { DateTimePicker } from "@/components/ui/date-time-picker"
 import { useJobs, useReminders, useInsights } from "@/lib/hooks"
+import { Logo } from "@/components/ui/logo"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,7 +55,7 @@ export default function JobSearchAssistant() {
       const userId = localStorage.getItem("user_id")
       const username = localStorage.getItem("username")
       if (!userId) {
-        router.replace("/login")
+        router.replace("/welcome")
       } else if (username) {
         setUserName(username)
       }
@@ -486,10 +487,13 @@ export default function JobSearchAssistant() {
       <header className="bg-[#F8FAFC]/95 backdrop-blur-sm border-b border-[#E0E9F0] px-4 py-3 relative z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="border-2 border-[#E0E9F0] rounded-xl px-4 py-2 bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] shadow-sm">
-              <span className="text-gray-700 font-bold text-lg">职得</span>
+            <div className="flex items-center space-x-2">
+              <Logo size="lg" className="flex-shrink-0" />
+              <div className="border-2 border-[#E0E9F0] rounded-xl px-4 py-2 bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] shadow-sm">
+                <span className="text-gray-700 font-bold text-lg">职得</span>
               </div>
             </div>
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
             <Button
