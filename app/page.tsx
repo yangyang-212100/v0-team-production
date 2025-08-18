@@ -613,21 +613,21 @@ export default function JobSearchAssistant() {
                   .map((task) => {
                     const isExpired = isTaskExpired(task, selectedDate)
                     return (
-                    <div key={task.id} className={`rounded-xl p-4 border shadow-sm hover:shadow-md transition-shadow ${
-                      isExpired 
-                        ? "bg-gray-100 border-gray-300 opacity-75" 
-                        : "bg-gradient-to-r from-[#E0E9F0] to-[#F5F8FA] border-[#B4C2CD]/30"
-                    }`}>
-                                           <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                                                    <div className="flex items-center space-x-2 mb-2">
-                             <p className={`font-medium ${isExpired ? "text-gray-500" : "text-gray-800"}`}>{task.title}</p>
-                             {task.type === 'interview' && (
-                               <Badge className={`${isExpired ? "bg-gray-300 text-gray-600 border-gray-400" : getStatusColor((task as any).status)} text-xs px-2 py-1`}>
-                                 {(task as any).status}
-                               </Badge>
-                             )}
-                           </div>
+                                         <div key={task.id} className={`rounded-xl p-4 border shadow-sm hover:shadow-md transition-shadow ${
+                       isExpired 
+                         ? "bg-gray-100 border-gray-300 opacity-75" 
+                         : "bg-gradient-to-r from-[#E0E9F0] to-[#F5F8FA] border-[#B4C2CD]/30"
+                     }`}>
+                                            <div className="flex items-start justify-between">
+                         <div className="flex-1">
+                                                     <div className="flex items-center justify-between mb-2">
+                              <p className={`font-medium ${isExpired ? "text-gray-500" : "text-gray-800"}`}>{task.title}</p>
+                              {task.type === 'interview' && (
+                                <Badge className={`${isExpired ? "bg-gray-300 text-gray-600 border-gray-400" : getStatusColor((task as any).status)} text-xs px-2 py-1 flex-shrink-0`}>
+                                  {(task as any).status}
+                                </Badge>
+                              )}
+                            </div>
                            <p className={`text-sm mb-1 ${isExpired ? "text-gray-500" : "text-gray-600"}`}>时间: {task.time}</p>
                           
                                                      {task.type === 'interview' && (task as any).interview_location && (
@@ -1425,16 +1425,17 @@ export default function JobSearchAssistant() {
                </div>
            )}
 
-                     {/* 添加职位对话框 */}
-               <Dialog open={isAddJobOpen} onOpenChange={setIsAddJobOpen}>
-             <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl overflow-y-auto">
-                  <DialogHeader>
-                <DialogTitle className="text-xl font-bold text-gray-800">添加新的职位申请</DialogTitle>
-                <DialogDescription className="text-gray-600">
-                      记录您的求职申请，跟踪进度
-                    </DialogDescription>
-                  </DialogHeader>
-                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 py-4">
+                                           {/* 添加职位对话框 */}
+                <Dialog open={isAddJobOpen} onOpenChange={setIsAddJobOpen}>
+              <DialogContent className="max-w-3xl w-[95vw] h-[90vh] bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl flex flex-col">
+                   <DialogHeader className="flex-shrink-0">
+                 <DialogTitle className="text-xl font-bold text-gray-800">添加新的职位申请</DialogTitle>
+                 <DialogDescription className="text-gray-600">
+                       记录您的求职申请，跟踪进度
+                     </DialogDescription>
+                   </DialogHeader>
+                                      <div className="flex-1 overflow-y-auto">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 py-4">
                     <div>
                   <Label htmlFor="company" className="text-gray-700 font-medium text-sm mb-2 block">公司名称</Label>
                       <Input
@@ -1524,25 +1525,26 @@ export default function JobSearchAssistant() {
                        </p>
                      </div>
                    </div>
-                    </div>
-                  </div>
-                                     <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-6 border-t border-[#E0E9F0]">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsAddJobOpen(false)}
-                  className="border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30 px-6 py-2"
-                >
-                      取消
-                    </Button>
-                <Button 
-                  onClick={addNewJob}
-                  className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200"
-                >
-                      添加申请
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                                         </div>
+                                       </div>
+                                      </div>
+                                      <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-6 border-t border-[#E0E9F0] flex-shrink-0">
+                 <Button 
+                   variant="outline" 
+                   onClick={() => setIsAddJobOpen(false)}
+                   className="border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30 px-6 py-2"
+                 >
+                       取消
+                     </Button>
+                 <Button 
+                   onClick={addNewJob}
+                   className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200"
+                 >
+                       添加申请
+                     </Button>
+                   </div>
+                 </DialogContent>
+               </Dialog>
 
           {/* 退出确认对话框 */}
           <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
