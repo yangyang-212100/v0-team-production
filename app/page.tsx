@@ -548,47 +548,47 @@ export default function JobSearchAssistant() {
           <div className="mb-6">
             <div className="flex items-center space-x-2 mb-3">
               <Calendar className="h-5 w-5 text-[#B4C2CD]" />
-              <div className="flex space-x-4">
-                                 {weekDates.map((date, index) => {
-                   const isToday = date.getDate() === currentDate && 
-                                  date.getMonth() === today.getMonth() && 
-                                  date.getFullYear() === today.getFullYear()
-                   const hasActiveTask = hasActiveTaskOnDate(date)
-                   const isSelected = selectedDate.getDate() === date.getDate() && 
-                                    selectedDate.getMonth() === date.getMonth() && 
-                                    selectedDate.getFullYear() === date.getFullYear()
-                   const dayName = weekDays[date.getDay()]
-                   return (
-                     <div key={index} className="text-center relative">
-                       <div className="text-sm text-gray-600 mb-1">{dayName}</div>
-                      <div 
-                        className={`w-12 h-12 flex items-center justify-center rounded-full text-sm cursor-pointer transition-all duration-200 relative ${
-                          isToday 
-                            ? 'bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] text-gray-700 shadow-lg' 
-                            : isSelected
-                            ? 'bg-[#E0E9F0] text-gray-700 border-2 border-[#B4C2CD]'
-                            : 'text-gray-700 hover:bg-[#E0E9F0]/50'
-                        }`}
-                        onClick={() => {
-                          setSelectedDate(date)
-                          setIsCalendarOpen(false) // 关闭弹窗，直接显示在下方
-                        }}
-                      >
-                        {date.getDate()}
-                                                 {hasActiveTask && (
-                           <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#B4C2CD] rounded-full border-2 border-white shadow-sm"></div>
+                             <div className="flex space-x-2 sm:space-x-4 overflow-x-auto pb-2">
+                                  {weekDates.map((date, index) => {
+                    const isToday = date.getDate() === currentDate && 
+                                   date.getMonth() === today.getMonth() && 
+                                   date.getFullYear() === today.getFullYear()
+                    const hasActiveTask = hasActiveTaskOnDate(date)
+                    const isSelected = selectedDate.getDate() === date.getDate() && 
+                                     selectedDate.getMonth() === date.getMonth() && 
+                                     selectedDate.getFullYear() === date.getFullYear()
+                    const dayName = weekDays[date.getDay()]
+                    return (
+                      <div key={index} className="text-center relative flex-shrink-0">
+                        <div className="text-xs sm:text-sm text-gray-600 mb-1">{dayName}</div>
+                       <div 
+                         className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full text-xs sm:text-sm cursor-pointer transition-all duration-200 relative ${
+                           isToday 
+                             ? 'bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] text-gray-700 shadow-lg' 
+                             : isSelected
+                             ? 'bg-[#E0E9F0] text-gray-700 border-2 border-[#B4C2CD]'
+                             : 'text-gray-700 hover:bg-[#E0E9F0]/50'
+                         }`}
+                         onClick={() => {
+                           setSelectedDate(date)
+                           setIsCalendarOpen(false) // 关闭弹窗，直接显示在下方
+                         }}
+                       >
+                         {date.getDate()}
+                                                  {hasActiveTask && (
+                            <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-[#B4C2CD] rounded-full border-2 border-white shadow-sm"></div>
+                          )}
+                         </div>
+                                               {/* 当前日期的指向箭头 */}
+                         {isToday && (
+                           <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                             <div className="w-0 h-0 border-l-3 border-r-3 border-t-3 sm:border-l-4 sm:border-r-4 sm:border-t-4 border-transparent border-t-[#B4C2CD]"></div>
+                       </div>
                          )}
-                        </div>
-                                              {/* 当前日期的指向箭头 */}
-                        {isToday && (
-                          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                            <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#B4C2CD]"></div>
-                      </div>
-                        )}
-                            </div>
-                  )
-                })}
-                          </div>
+                             </div>
+                   )
+                 })}
+                           </div>
                     </div>
                             </div>
 
@@ -1425,16 +1425,16 @@ export default function JobSearchAssistant() {
                </div>
            )}
 
-          {/* 添加职位对话框 */}
-              <Dialog open={isAddJobOpen} onOpenChange={setIsAddJobOpen}>
-            <DialogContent className="max-w-3xl bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl">
+                     {/* 添加职位对话框 */}
+               <Dialog open={isAddJobOpen} onOpenChange={setIsAddJobOpen}>
+             <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl overflow-y-auto">
                   <DialogHeader>
                 <DialogTitle className="text-xl font-bold text-gray-800">添加新的职位申请</DialogTitle>
                 <DialogDescription className="text-gray-600">
                       记录您的求职申请，跟踪进度
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="grid grid-cols-2 gap-6 py-4">
+                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 py-4">
                     <div>
                   <Label htmlFor="company" className="text-gray-700 font-medium text-sm mb-2 block">公司名称</Label>
                       <Input
@@ -1485,29 +1485,29 @@ export default function JobSearchAssistant() {
                         </SelectContent>
                       </Select>
                     </div>
-                <div className="col-span-2">
-                  <Label htmlFor="url" className="text-gray-700 font-medium text-sm mb-2 block">投递网址</Label>
-                      <Input
-                      id="url"
-                      value={newJob.url}
-                      onChange={(e) => setNewJob({ ...newJob, url: e.target.value })}
-                      placeholder="请输入投递网址（可选）"
-                      className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-11 text-gray-700 placeholder-gray-500"
-                      autoComplete="off"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                   <Label htmlFor="description" className="text-gray-700 font-medium text-sm mb-2 block">岗位JD</Label>
-                      <Textarea
-                        id="description"
-                        value={newJob.description}
-                        onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
-                     placeholder="请输入岗位JD描述"
-                     rows={6}
-                     className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 placeholder-gray-500"
-                      />
-                    </div>
-                    <div className="col-span-2">
+                                 <div className="col-span-1 sm:col-span-2">
+                   <Label htmlFor="url" className="text-gray-700 font-medium text-sm mb-2 block">投递网址</Label>
+                       <Input
+                       id="url"
+                       value={newJob.url}
+                       onChange={(e) => setNewJob({ ...newJob, url: e.target.value })}
+                       placeholder="请输入投递网址（可选）"
+                       className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-11 text-gray-700 placeholder-gray-500"
+                       autoComplete="off"
+                       />
+                     </div>
+                     <div className="col-span-1 sm:col-span-2">
+                    <Label htmlFor="description" className="text-gray-700 font-medium text-sm mb-2 block">岗位JD</Label>
+                       <Textarea
+                         id="description"
+                         value={newJob.description}
+                         onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
+                      placeholder="请输入岗位JD描述"
+                      rows={4}
+                      className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 placeholder-gray-500"
+                       />
+                     </div>
+                     <div className="col-span-1 sm:col-span-2">
                    <div className="flex items-center space-x-3 bg-[#F5F8FA] rounded-lg p-4 border border-[#E0E9F0]/30">
                      <Checkbox
                        id="generateInsight"
@@ -1526,7 +1526,7 @@ export default function JobSearchAssistant() {
                    </div>
                     </div>
                   </div>
-                  <div className="flex justify-end space-x-3 pt-6 border-t border-[#E0E9F0]">
+                                     <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-6 border-t border-[#E0E9F0]">
                 <Button 
                   variant="outline" 
                   onClick={() => setIsAddJobOpen(false)}
