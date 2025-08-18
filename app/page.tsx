@@ -39,6 +39,10 @@ export default function JobSearchAssistant() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
   const [generateInsight, setGenerateInsight] = useState(true)
+  const [isAddOptionsOpen, setIsAddOptionsOpen] = useState(false)
+  const [isSearchJobOpen, setIsSearchJobOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<any[]>([])
   const router = useRouter()
 
   // 检查登录状态 - 只在客户端检查
@@ -223,6 +227,47 @@ export default function JobSearchAssistant() {
         }
       }
     }
+  }
+
+  const searchJobs = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
+
+    const results = jobs.filter(job => {
+      // 排除状态为OFFER的职位
+      if (job.status === "OFFER") {
+        return false
+      }
+
+      const company = job.company || ''
+      const position = job.position || ''
+      const location = job.location || ''
+      const salary = job.salary || ''
+      const description = job.description || ''
+      const requirements = job.requirements || ''
+      const status = job.status || ''
+      const type = job.type || ''
+
+      const searchText = `${company} ${position} ${location} ${salary} ${description} ${requirements} ${status} ${type}`.toLowerCase()
+      return searchText.includes(query.toLowerCase())
+    })
+
+    setSearchResults(results)
+  }
+
+  const handleSelectJobForUpdate = (job: any) => {
+    // 设置当前要更新的职位ID和状态
+    setUpdatingJobId(job.id)
+    setUpdatingStatus(job.status || "已投递")
+    setUpdatingDateTime(job.interview_datetime || "")
+    setUpdatingLocationType(job.interview_location_type || "线下")
+    setUpdatingLocation(job.interview_location || "")
+    setUpdatingSalary(job.salary || "")
+
+    // 关闭搜索对话框，打开现有的更新对话框
+    setIsSearchJobOpen(false)
   }
 
   // 统计数据
@@ -842,44 +887,44 @@ export default function JobSearchAssistant() {
                       记录您的求职申请，跟踪进度
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-6 py-4">
                     <div>
-                  <Label htmlFor="company" className="text-gray-700 font-medium">公司名称</Label>
+                  <Label htmlFor="company" className="text-gray-700 font-medium text-sm mb-2 block">公司名称</Label>
                       <Input
                         id="company"
                         value={newJob.company}
                         onChange={(e) => setNewJob({ ...newJob, company: e.target.value })}
                         placeholder="请输入公司名称"
-                      className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0]"
+                      className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-11 text-gray-700 placeholder-gray-500"
                       autoComplete="off"
                       />
                     </div>
                     <div>
-                  <Label htmlFor="position" className="text-gray-700 font-medium">职位名称</Label>
+                  <Label htmlFor="position" className="text-gray-700 font-medium text-sm mb-2 block">职位名称</Label>
                       <Input
                         id="position"
                         value={newJob.position}
                         onChange={(e) => setNewJob({ ...newJob, position: e.target.value })}
                         placeholder="请输入职位名称"
-                      className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0]"
+                      className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-11 text-gray-700 placeholder-gray-500"
                       autoComplete="off"
                       />
                     </div>
                     <div>
-                  <Label htmlFor="location" className="text-gray-700 font-medium">工作地点</Label>
+                  <Label htmlFor="location" className="text-gray-700 font-medium text-sm mb-2 block">工作地点</Label>
                       <Input
                         id="location"
                         value={newJob.location}
                         onChange={(e) => setNewJob({ ...newJob, location: e.target.value })}
                         placeholder="请输入工作地点"
-                      className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0]"
+                      className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-11 text-gray-700 placeholder-gray-500"
                       autoComplete="off"
                       />
                     </div>
                     <div>
-                  <Label htmlFor="status" className="text-gray-700 font-medium">投递状态</Label>
+                  <Label htmlFor="status" className="text-gray-700 font-medium text-sm mb-2 block">投递状态</Label>
                       <Select value={newJob.status} onValueChange={(value) => setNewJob({ ...newJob, status: value })}>
-                    <SelectTrigger className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0]">
+                    <SelectTrigger className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-11 text-gray-700">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -894,54 +939,57 @@ export default function JobSearchAssistant() {
                       </Select>
                     </div>
                 <div className="col-span-2">
-                  <Label htmlFor="url" className="text-gray-700 font-medium">投递网址</Label>
+                  <Label htmlFor="url" className="text-gray-700 font-medium text-sm mb-2 block">投递网址</Label>
                       <Input
                       id="url"
                       value={newJob.url}
                       onChange={(e) => setNewJob({ ...newJob, url: e.target.value })}
                       placeholder="请输入投递网址（可选）"
-                      className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0]"
+                      className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-11 text-gray-700 placeholder-gray-500"
                       autoComplete="off"
                       />
                     </div>
                     <div className="col-span-2">
-                   <Label htmlFor="description" className="text-gray-700 font-medium">岗位JD</Label>
+                   <Label htmlFor="description" className="text-gray-700 font-medium text-sm mb-2 block">岗位JD</Label>
                       <Textarea
                         id="description"
                         value={newJob.description}
                         onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
                      placeholder="请输入岗位JD描述"
                      rows={6}
-                     className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0]"
+                     className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 placeholder-gray-500"
                       />
                     </div>
                     <div className="col-span-2">
-                   <div className="flex items-center space-x-2">
+                   <div className="flex items-center space-x-3 bg-[#F5F8FA] rounded-lg p-4 border border-[#E0E9F0]/30">
                      <Checkbox
                        id="generateInsight"
                        checked={generateInsight}
                        onCheckedChange={(checked) => setGenerateInsight(checked as boolean)}
+                       className="border-[#B4C2CD] data-[state=checked]:bg-[#E0E9F0] data-[state=checked]:border-[#B4C2CD]"
                      />
-                     <Label htmlFor="generateInsight" className="text-gray-700 font-medium">
-                       需要生成岗位洞察
-                     </Label>
+                     <div>
+                       <Label htmlFor="generateInsight" className="text-gray-700 font-medium text-sm">
+                         需要生成岗位洞察
+                       </Label>
+                       <p className="text-sm text-gray-500 mt-1">
+                         勾选后将自动生成该公司的企业文化、产品介绍和面试经验等洞察信息
+                       </p>
+                     </div>
                    </div>
-                   <p className="text-sm text-gray-500 mt-1">
-                     勾选后将自动生成该公司的企业文化、产品介绍和面试经验等洞察信息
-                   </p>
                     </div>
                   </div>
-                  <div className="flex justify-end space-x-2 mt-6">
+                  <div className="flex justify-end space-x-3 pt-6 border-t border-[#E0E9F0]">
                 <Button 
                   variant="outline" 
                   onClick={() => setIsAddJobOpen(false)}
-                  className="border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30"
+                  className="border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30 px-6 py-2"
                 >
                       取消
                     </Button>
                 <Button 
                   onClick={addNewJob}
-                  className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700"
+                  className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200"
                 >
                       添加申请
                     </Button>
@@ -1024,6 +1072,106 @@ export default function JobSearchAssistant() {
                           </div>
                         </div>
 
+      {/* 加号选项对话框 */}
+      <Dialog open={isAddOptionsOpen} onOpenChange={setIsAddOptionsOpen}>
+        <DialogContent className="max-w-md bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
+              <Plus className="h-5 w-5 mr-2 text-[#B4C2CD]" />
+              选择操作
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              请选择您要进行的操作
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-6">
+            <Button 
+              onClick={() => {
+                setIsAddOptionsOpen(false)
+                setIsAddJobOpen(true)
+              }}
+              className="w-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
+            >
+              <Briefcase className="h-5 w-5 mr-3" />
+              添加新职位
+            </Button>
+            <Button 
+              onClick={() => {
+                setIsAddOptionsOpen(false)
+                setIsSearchJobOpen(true)
+              }}
+              className="w-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
+            >
+              <Bell className="h-5 w-5 mr-3" />
+              添加新提醒
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 职位搜索对话框 */}
+      <Dialog open={isSearchJobOpen} onOpenChange={setIsSearchJobOpen}>
+        <DialogContent className="max-w-2xl bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
+              <Search className="h-5 w-5 mr-2 text-[#B4C2CD]" />
+              搜索职位添加提醒
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              搜索现有职位，为其添加面试/笔试提醒
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-6 space-y-6">
+            <div>
+              <Input
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  searchJobs(e.target.value)
+                }}
+                placeholder="输入公司名称或职位名称进行搜索..."
+                className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-12 text-gray-700 placeholder-gray-500"
+                autoComplete="off"
+              />
+            </div>
+            <div className="max-h-96 overflow-y-auto space-y-3">
+              {searchResults.length > 0 ? (
+                searchResults.map((job) => (
+                  <Card key={job.id} className="hover:shadow-lg transition-all duration-200 border-[#E0E9F0] bg-white/90 backdrop-blur-sm">
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-800 text-lg">{job.company}</h3>
+                          <p className="text-gray-600 text-base">{job.position}</p>
+                          <p className="text-sm text-gray-500 mt-1">当前状态: {job.status}</p>
+                        </div>
+                        <Button
+                          onClick={() => handleSelectJobForUpdate(job)}
+                          className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                        >
+                          选择
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : searchQuery ? (
+                <div className="text-center py-12 text-gray-500">
+                  <Search className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                  <p className="text-lg font-medium">未找到相关职位</p>
+                  <p className="text-sm text-gray-400 mt-1">请尝试其他关键词</p>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <Search className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                  <p className="text-lg font-medium">请输入关键词开始搜索</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* 底部导航栏 */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#F8FAFC]/95 backdrop-blur-sm border-t border-[#E0E9F0] px-4 py-3 shadow-lg z-50">
         <div className="flex items-center justify-between max-w-md mx-auto">
@@ -1038,7 +1186,7 @@ export default function JobSearchAssistant() {
             variant="ghost" 
             size="icon"
             className="w-12 h-12 rounded-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] text-gray-700 hover:from-[#B4C2CD] hover:to-[#E0E9F0] shadow-lg transition-all duration-200"
-            onClick={() => setIsAddJobOpen(true)}
+            onClick={() => setIsAddOptionsOpen(true)}
           >
             <Plus className="h-6 w-6" />
           </Button>
