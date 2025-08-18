@@ -257,6 +257,9 @@ export default function JobSearchAssistant() {
     setSearchResults(results)
   }
 
+  // 获取当前日期信息
+  const today = new Date()
+
   const handleSelectJobForUpdate = (job: any) => {
     // 设置当前要更新的职位ID和状态
     setUpdatingJobId(job.id)
@@ -270,9 +273,83 @@ export default function JobSearchAssistant() {
     setIsSearchJobOpen(false)
   }
 
+  // 获取某天的所有任务（包括提醒和面试/笔试）
+  const getTasksForDate = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0]
+    const tasks = []
+    
+    // 添加提醒任务
+    const dayReminders = reminders.filter(reminder => 
+      reminder.date === dateStr || 
+      reminder.date === '今天' && date.getDate() === today.getDate()
+    )
+    tasks.push(...dayReminders.map(reminder => ({
+      ...reminder,
+      type: 'reminder',
+      time: reminder.time
+    })))
+    
+         // 添加面试/笔试任务（排除OFFER状态的职位）
+     const dayInterviews = jobs.filter(job => 
+       job.interview_datetime && 
+       new Date(job.interview_datetime).toDateString() === date.toDateString() &&
+       job.status !== "OFFER"
+     )
+    tasks.push(...dayInterviews.map(job => ({
+      id: `interview-${job.id}`,
+      title: `${job.company} - ${job.position}`,
+      time: new Date(job.interview_datetime!).toLocaleTimeString('zh-CN', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }),
+      company: job.company,
+      position: job.position,
+      interview_datetime: job.interview_datetime!,
+      interview_location: job.interview_location,
+      interview_location_type: job.interview_location_type,
+      status: job.status,
+      type: 'interview',
+      completed: false
+    })))
+    
+    // 按时间排序
+    return tasks.sort((a, b) => {
+      const timeA = a.time
+      const timeB = b.time
+      return timeA.localeCompare(timeB)
+    })
+  }
+
+  // 检查任务是否已过期
+  const isTaskExpired = (task: any, date: Date) => {
+    // 检查日期是否已过
+    const taskDate = new Date(date)
+    const today = new Date()
+    const isDatePassed = taskDate < new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    
+    if (isDatePassed) return true
+    
+    // 如果是今天，检查时间是否已过
+    if (taskDate.getDate() === today.getDate() && 
+        taskDate.getMonth() === today.getMonth() && 
+        taskDate.getFullYear() === today.getFullYear()) {
+      
+      const taskTime = task.time
+      const currentTime = today.toLocaleTimeString('zh-CN', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
+      
+      return taskTime < currentTime
+    }
+    
+    return false
+  }
+
   // 统计数据
   const completedTasks = reminders.filter((r) => r.completed).length
-  const pendingTasks = reminders.filter((r) => !r.completed).length
+  const todayTasks = getTasksForDate(today)
+  const pendingTasks = todayTasks.filter((task) => !task.completed).length
   const totalApplications = jobs.length
   const interviewStage = jobs.filter((job) => 
     job.status.includes("面试") || job.status.includes("电话")
@@ -321,26 +398,36 @@ export default function JobSearchAssistant() {
     }
   }
 
-  // 获取当前日期信息
-  const today = new Date()
   const currentDate = today.getDate()
   const weekDays = ['日', '一', '二', '三', '四', '五', '六']
   const weekDates: Date[] = []
   
-  // 生成一周的日期
-  for (let i = 0; i < 7; i++) {
+  // 生成当日和前后三天的日期（共7天，当日居中）
+  for (let i = -3; i <= 3; i++) {
     const date = new Date(today)
-    date.setDate(today.getDate() - today.getDay() + i)
+    date.setDate(today.getDate() + i)
     weekDates.push(date)
   }
 
   // 检查某天是否有任务
   const hasTaskOnDate = (date: Date) => {
     const dateStr = date.toISOString().split('T')[0]
-    return reminders.some(reminder => 
+    const hasReminders = reminders.some(reminder => 
       reminder.date === dateStr || 
       reminder.date === '今天' && date.getDate() === today.getDate()
     )
+         const hasInterviews = jobs.some(job => 
+       job.interview_datetime && 
+       new Date(job.interview_datetime).toDateString() === date.toDateString() &&
+       job.status !== "OFFER"
+     )
+    return hasReminders || hasInterviews
+  }
+
+  // 检查某天是否有未过期的任务（用于日历指示器）
+  const hasActiveTaskOnDate = (date: Date) => {
+    const tasks = getTasksForDate(date)
+    return tasks.some(task => !isTaskExpired(task, date))
   }
 
   // 加载和错误处理
@@ -427,16 +514,18 @@ export default function JobSearchAssistant() {
             <div className="flex items-center space-x-2 mb-3">
               <Calendar className="h-5 w-5 text-[#B4C2CD]" />
               <div className="flex space-x-4">
-                {weekDays.map((day, index) => {
-                  const date = weekDates[index]
-                  const isToday = date.getDate() === currentDate
-                  const hasTask = hasTaskOnDate(date)
-                  const isSelected = selectedDate.getDate() === date.getDate() && 
-                                   selectedDate.getMonth() === date.getMonth() && 
-                                   selectedDate.getFullYear() === date.getFullYear()
-                  return (
-                    <div key={index} className="text-center relative">
-                      <div className="text-sm text-gray-600 mb-1">{day}</div>
+                                 {weekDates.map((date, index) => {
+                   const isToday = date.getDate() === currentDate && 
+                                  date.getMonth() === today.getMonth() && 
+                                  date.getFullYear() === today.getFullYear()
+                   const hasActiveTask = hasActiveTaskOnDate(date)
+                   const isSelected = selectedDate.getDate() === date.getDate() && 
+                                    selectedDate.getMonth() === date.getMonth() && 
+                                    selectedDate.getFullYear() === date.getFullYear()
+                   const dayName = weekDays[date.getDay()]
+                   return (
+                     <div key={index} className="text-center relative">
+                       <div className="text-sm text-gray-600 mb-1">{dayName}</div>
                       <div 
                         className={`w-12 h-12 flex items-center justify-center rounded-full text-sm cursor-pointer transition-all duration-200 relative ${
                           isToday 
@@ -451,9 +540,9 @@ export default function JobSearchAssistant() {
                         }}
                       >
                         {date.getDate()}
-                        {hasTask && (
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
-                        )}
+                                                 {hasActiveTask && (
+                           <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#B4C2CD] rounded-full border-2 border-white shadow-sm"></div>
+                         )}
                         </div>
                                               {/* 当前日期的指向箭头 */}
                         {isToday && (
@@ -468,54 +557,102 @@ export default function JobSearchAssistant() {
                     </div>
                             </div>
 
-          {/* 待办事项 */}
-                        <div>
-            <h3 className="text-lg font-semibold mb-3 text-gray-800">
-              {selectedDate.getDate() === currentDate ? '今日待办:' : `${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日待办:`}
-            </h3>
-                  <div className="space-y-3">
-              {reminders
-                .filter((r) => {
-                  // 根据选择的日期过滤待办
-                  if (selectedDate.getDate() === currentDate) {
-                    // 今天：显示未完成的待办
-                    return !r.completed
-                  } else {
-                    // 其他日期：显示该日期的待办
-                    const dateStr = selectedDate.toISOString().split('T')[0]
-                    return r.date === dateStr || r.date === '今天' && selectedDate.getDate() === currentDate
-                  }
-                })
-                .slice(0, 3)
-                .map((reminder) => (
-                  <div key={reminder.id} className="bg-gradient-to-r from-[#E0E9F0] to-[#F5F8FA] rounded-xl p-4 border border-[#B4C2CD]/30 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-800">{reminder.title}</p>
-                        <p className="text-sm text-gray-600">时间: {reminder.time}</p>
-                        <p className="text-sm text-gray-600">地点: {reminder.company}</p>
-                      </div>
-                      <Checkbox
-                        checked={reminder.completed}
-                        onCheckedChange={() => handleToggleReminder(reminder.id, !reminder.completed)}
-                      />
+                     {/* 待办事项 */}
+                         <div>
+             <h3 className="text-lg font-semibold mb-3 text-gray-800">
+               {selectedDate.getDate() === currentDate ? '今日待办:' : `${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日待办:`}
+             </h3>
+                   <div className="space-y-3">
+                               {getTasksForDate(selectedDate)
+                  .filter((task) => {
+                    // 根据选择的日期过滤任务
+                    if (selectedDate.getDate() === currentDate) {
+                      // 今天：显示未完成的任务
+                      return !task.completed
+                    } else {
+                      // 其他日期：显示该日期的所有任务
+                      return true
+                    }
+                  })
+                  .slice(0, 5)
+                  .map((task) => {
+                    const isExpired = isTaskExpired(task, selectedDate)
+                    return (
+                    <div key={task.id} className={`rounded-xl p-4 border shadow-sm hover:shadow-md transition-shadow ${
+                      isExpired 
+                        ? "bg-gray-100 border-gray-300 opacity-75" 
+                        : "bg-gradient-to-r from-[#E0E9F0] to-[#F5F8FA] border-[#B4C2CD]/30"
+                    }`}>
+                                           <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                                                    <div className="flex items-center space-x-2 mb-2">
+                             <p className={`font-medium ${isExpired ? "text-gray-500" : "text-gray-800"}`}>{task.title}</p>
+                             {task.type === 'interview' && (
+                               <Badge className={`${isExpired ? "bg-gray-300 text-gray-600 border-gray-400" : getStatusColor((task as any).status)} text-xs px-2 py-1`}>
+                                 {(task as any).status}
+                               </Badge>
+                             )}
+                           </div>
+                           <p className={`text-sm mb-1 ${isExpired ? "text-gray-500" : "text-gray-600"}`}>时间: {task.time}</p>
+                          
+                                                     {task.type === 'interview' && (task as any).interview_location && (
+                             <div className="mt-2">
+                               {(task as any).interview_location_type === "线上" ? (
+                                 <div className="flex items-center space-x-2">
+                                   <span className={`text-sm ${isExpired ? "text-gray-500" : "text-gray-600"}`}>会议链接:</span>
+                                   <Button
+                                     size="sm"
+                                     variant="outline"
+                                     className={`text-xs h-6 px-2 ${
+                                       isExpired 
+                                         ? "border-gray-400 text-gray-500 hover:bg-gray-200" 
+                                         : "border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30"
+                                     }`}
+                                     onClick={() => window.open((task as any).interview_location, '_blank')}
+                                   >
+                                     <ExternalLink className="h-3 w-3 mr-1" />
+                                     跳转会议
+                                   </Button>
+                                 </div>
+                               ) : (
+                                 <div className="flex items-start space-x-2">
+                                   <MapPin className={`h-4 w-4 mt-0.5 flex-shrink-0 ${isExpired ? "text-gray-400" : "text-[#B4C2CD]"}`} />
+                                   <div>
+                                     <p className={`text-sm ${isExpired ? "text-gray-500" : "text-gray-600"}`}>面试地点:</p>
+                                     <p className={`text-sm font-medium ${isExpired ? "text-gray-500" : "text-gray-700"}`}>{(task as any).interview_location}</p>
+                                   </div>
+                                 </div>
+                               )}
+                             </div>
+                           )}
+                           
+                           {task.type === 'reminder' && (
+                             <p className={`text-sm ${isExpired ? "text-gray-500" : "text-gray-600"}`}>地点: {task.company}</p>
+                           )}
                         </div>
+                        
+                                                 {task.type === 'reminder' && (
+                           <Checkbox
+                             checked={task.completed}
+                             onCheckedChange={() => handleToggleReminder(task.id as number, !task.completed)}
+                           />
+                         )}
                       </div>
-                    ))}
-              {reminders.filter((r) => {
-                if (selectedDate.getDate() === currentDate) {
-                  return !r.completed
-                } else {
-                  const dateStr = selectedDate.toISOString().split('T')[0]
-                  return r.date === dateStr || r.date === '今天' && selectedDate.getDate() === currentDate
-                }
-              }).length === 0 && (
-                <div className="text-center py-6 text-gray-500">
-                  <Calendar className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                  <p>该日期暂无待办事项</p>
-                  </div>
-              )}
-                        </div>
+                    </div>
+                  )})}
+               {getTasksForDate(selectedDate).filter((task) => {
+                 if (selectedDate.getDate() === currentDate) {
+                   return !task.completed
+                 } else {
+                   return true
+                 }
+               }).length === 0 && (
+                 <div className="text-center py-6 text-gray-500">
+                   <Calendar className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                   <p>该日期暂无待办事项</p>
+                   </div>
+               )}
+                         </div>
                       </div>
                           </div>
 
