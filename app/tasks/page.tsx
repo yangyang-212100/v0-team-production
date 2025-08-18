@@ -4,13 +4,16 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Building2, MapPin, DollarSign, CheckCircle2, Trophy } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { ArrowLeft, Building2, MapPin, DollarSign, CheckCircle2, Trophy, Trash2, Edit3 } from "lucide-react"
 import { useJobs } from "@/lib/hooks"
 
 export default function OfferPage() {
   const router = useRouter()
-  const { jobs } = useJobs()
+  const { jobs, deleteJob } = useJobs()
   const [completedJobs, setCompletedJobs] = useState<any[]>([])
+  const [selectedJobs, setSelectedJobs] = useState<number[]>([])
+  const [isBatchMode, setIsBatchMode] = useState(false)
 
   // 检查登录状态
   useEffect(() => {
@@ -28,6 +31,51 @@ export default function OfferPage() {
     const completed = jobs.filter(job => job.progress === 100)
     setCompletedJobs(completed)
   }, [jobs])
+
+  // 批量管理功能
+  const handleSelectJob = (jobId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedJobs(prev => [...prev, jobId])
+    } else {
+      setSelectedJobs(prev => prev.filter(id => id !== jobId))
+    }
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedJobs(completedJobs.map(job => job.id))
+    } else {
+      setSelectedJobs([])
+    }
+  }
+
+  const handleBatchDelete = async () => {
+    if (selectedJobs.length === 0) return
+    
+    if (confirm(`确定要删除选中的 ${selectedJobs.length} 个OFFER吗？此操作不可恢复。`)) {
+      try {
+        for (const jobId of selectedJobs) {
+          await deleteJob(jobId)
+        }
+        setSelectedJobs([])
+        setIsBatchMode(false)
+      } catch (error) {
+        console.error('批量删除失败:', error)
+        alert('批量删除失败，请重试')
+      }
+    }
+  }
+
+  const handleSingleDelete = async (jobId: number) => {
+    if (confirm('确定要删除这个OFFER吗？此操作不可恢复。')) {
+      try {
+        await deleteJob(jobId)
+      } catch (error) {
+        console.error('删除失败:', error)
+        alert('删除失败，请重试')
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F8FA] relative overflow-hidden">
@@ -54,6 +102,34 @@ export default function OfferPage() {
               <p className="text-sm text-gray-600">恭喜您获得的职位机会</p>
             </div>
           </div>
+          {completedJobs.length > 0 && (
+            <div className="flex items-center space-x-2">
+              <Button
+                variant={isBatchMode ? "default" : "outline"}
+                onClick={() => {
+                  setIsBatchMode(!isBatchMode)
+                  setSelectedJobs([])
+                }}
+                className={`${
+                  isBatchMode 
+                    ? 'bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] text-gray-700' 
+                    : 'border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30'
+                }`}
+              >
+                <Edit3 className="h-4 w-4 mr-2" />
+                {isBatchMode ? '退出批量管理' : '批量管理'}
+              </Button>
+              {isBatchMode && selectedJobs.length > 0 && (
+                <Button
+                  onClick={handleBatchDelete}
+                  className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 border border-[#B4C2CD]"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  删除选中 ({selectedJobs.length})
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -85,12 +161,52 @@ export default function OfferPage() {
               <p className="text-gray-600">以下是您成功获得的职位机会</p>
             </div>
             
+            {/* 批量管理工具栏 */}
+            {isBatchMode && (
+              <div className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-xl p-4 flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={selectedJobs.length === completedJobs.length && completedJobs.length > 0}
+                      onCheckedChange={handleSelectAll}
+                    />
+                    <span className="text-sm text-gray-700">全选</span>
+                  </div>
+                  <span className="text-sm text-gray-600">
+                    已选择 {selectedJobs.length} / {completedJobs.length} 个OFFER
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsBatchMode(false)
+                    setSelectedJobs([])
+                  }}
+                  className="border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30"
+                >
+                  取消
+                </Button>
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {completedJobs.map((job) => (
-                                 <Card key={job.id} className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl hover:shadow-xl transition-all duration-300 relative z-10">
+                <Card 
+                  key={job.id} 
+                  className={`bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl hover:shadow-xl transition-all duration-300 relative z-10 ${
+                    isBatchMode && selectedJobs.includes(job.id) ? 'ring-2 ring-[#B4C2CD] bg-[#E0E9F0]/50' : ''
+                  }`}
+                >
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
+                        {isBatchMode && (
+                          <Checkbox
+                            checked={selectedJobs.includes(job.id)}
+                            onCheckedChange={(checked) => handleSelectJob(job.id, checked as boolean)}
+                            className="mr-2"
+                          />
+                        )}
                         <div className="w-12 h-12 bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] rounded-full flex items-center justify-center">
                           <CheckCircle2 className="h-6 w-6 text-gray-600" />
                         </div>
@@ -99,9 +215,21 @@ export default function OfferPage() {
                           <p className="text-gray-600 font-medium">{job.position}</p>
                         </div>
                       </div>
-                                             <Badge className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] text-gray-700 px-3 py-1 border border-[#B4C2CD]">
-                         OFFER
-                       </Badge>
+                      <div className="flex items-center space-x-2">
+                        <Badge className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] text-gray-700 px-3 py-1 border border-[#B4C2CD]">
+                          OFFER
+                        </Badge>
+                        {!isBatchMode && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSingleDelete(job.id)}
+                            className="text-[#B4C2CD] hover:text-gray-700 hover:bg-[#E0E9F0]/30 p-1 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
