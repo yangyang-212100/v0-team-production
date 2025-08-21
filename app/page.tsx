@@ -412,21 +412,21 @@ export default function JobSearchAssistant() {
   const getProgressColor = (status: string) => {
     switch (status) {
       case "已投递":
-        return "bg-[#B4C2CD]"
+        return "bg-[#2a97f3]"
       case "笔试":
-        return "bg-[#B4C2CD]"
+        return "bg-[#2a97f3]"
       case "一面":
-        return "bg-[#B4C2CD]"
+        return "bg-[#2a97f3]"
       case "二面":
-        return "bg-[#B4C2CD]"
+        return "bg-[#2a97f3]"
       case "三面":
-        return "bg-[#B4C2CD]"
+        return "bg-[#2a97f3]"
       case "OFFER":
-        return "bg-[#B4C2CD]"
+        return "bg-[#2a97f3]"
       case "已拒绝":
-        return "bg-[#B4C2CD]"
+        return "bg-[#2a97f3]"
       default:
-        return "bg-[#B4C2CD]"
+        return "bg-[#2a97f3]"
     }
   }
 
@@ -475,7 +475,7 @@ export default function JobSearchAssistant() {
   }
 
     return (
-    <div className="min-h-screen bg-[#F5F8FA] relative overflow-hidden">
+     <div className="min-h-screen bg-gradient-to-br from-[#d6e5fd] via-[#d6e5fd] to-[#f7f7f7] relative overflow-hidden">
       {/* 背景装饰 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#E0E9F0]/30 rounded-full blur-xl"></div>
@@ -504,7 +504,6 @@ export default function JobSearchAssistant() {
                   <AvatarImage src="/placeholder-user.jpg" alt={userName} />
                   <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
             </Avatar>
-                <ChevronDown className="absolute -bottom-1 -right-1 h-3 w-3 text-[#B4C2CD]" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
@@ -564,9 +563,9 @@ export default function JobSearchAssistant() {
                        <div 
                          className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full text-xs sm:text-sm cursor-pointer transition-all duration-200 relative ${
                            isToday 
-                             ? 'bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] text-gray-700 shadow-lg' 
+                             ? 'bg-gradient-to-r from-[#4285f4] to-[#2a97f3] text-white shadow-lg' 
                              : isSelected
-                             ? 'bg-[#E0E9F0] text-gray-700 border-2 border-[#B4C2CD]'
+                             ? 'bg-[#acd6fa] text-gray-700 border-2 border-[#B4C2CD]'
                              : 'text-gray-700 hover:bg-[#E0E9F0]/50'
                          }`}
                          onClick={() => {
@@ -616,7 +615,7 @@ export default function JobSearchAssistant() {
                                          <div key={task.id} className={`rounded-xl p-4 border shadow-sm hover:shadow-md transition-shadow ${
                        isExpired 
                          ? "bg-gray-100 border-gray-300 opacity-75" 
-                         : "bg-gradient-to-r from-[#E0E9F0] to-[#F5F8FA] border-[#B4C2CD]/30"
+                          : "bg-gradient-to-br from-[#d6e5fd] via-[#d6e5fd] to-[#f7f7f7] border-[#B4C2CD]/30"
                      }`}>
                                             <div className="flex items-start justify-between">
                          <div className="flex-1">
@@ -726,9 +725,9 @@ export default function JobSearchAssistant() {
                    variant="ghost"
                    size="sm"
                    onClick={() => setIsJobListSearching(true)}
-                   className="h-8 w-8 p-0 text-[#B4C2CD] hover:bg-[#E0E9F0]/30"
+                    className="h-8 w-8 p-0 text-black hover:bg-[#E0E9F0]/30"
                  >
-                   <Search className="h-5 w-5" />
+                    <Search className="h-6 w-6" />
                  </Button>
                )}
              </div>

@@ -57,7 +57,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F8FA] flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#d6e5fd] via-[#d6e5fd] to-[#f7f7f7] flex items-center justify-center relative overflow-hidden">
       {/* 背景装饰 */}
       <div className="absolute inset-0">
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#E0E9F0]/30 rounded-full blur-xl"></div>
@@ -81,7 +81,7 @@ export default function RegisterPage() {
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 required
-                className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 placeholder-gray-500"
+                className="border-black focus:border-black focus:ring-black bg-white/80 backdrop-blur-sm text-gray-700 placeholder-gray-500"
                 autoComplete="off"
               />
             </div>
@@ -92,7 +92,7 @@ export default function RegisterPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
-                className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 placeholder-gray-500"
+                className="border-black focus:border-black focus:ring-black bg-white/80 backdrop-blur-sm text-gray-700 placeholder-gray-500"
                 autoComplete="off"
               />
             </div>
@@ -103,14 +103,14 @@ export default function RegisterPage() {
             )}
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 border border-[#B4C2CD] shadow-sm" 
+              className="w-full bg-black hover:bg-gray-800 text-white font-bold shadow-sm" 
               disabled={loading}
             >
               {loading ? "注册中..." : "注册"}
             </Button>
             <div className="text-sm text-center mt-4 text-gray-600">
               已有账号？{" "}
-              <a href="/login" className="text-[#B4C2CD] hover:text-[#E0E9F0] font-medium transition-colors">
+              <a href="/login" className="text-[#4285f4] hover:text-[#2aa8f3] font-medium transition-colors">
                 去登录
               </a>
             </div>
