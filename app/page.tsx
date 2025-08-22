@@ -240,11 +240,6 @@ export default function JobSearchAssistant() {
     }
 
     const results = jobs.filter(job => {
-      // 排除状态为OFFER的职位
-      if (job.status === "OFFER") {
-        return false
-      }
-
       const company = job.company || ''
       const position = job.position || ''
       const location = job.location || ''
@@ -268,11 +263,6 @@ export default function JobSearchAssistant() {
     }
 
     const results = jobs.filter(job => {
-      // 排除状态为OFFER的职位
-      if (job.status === "OFFER") {
-        return false
-      }
-
       const company = job.company || ''
       const position = job.position || ''
       const location = job.location || ''
@@ -733,24 +723,16 @@ export default function JobSearchAssistant() {
              </div>
            </div>
 
-          {jobs.filter(job => job.progress < 100).length === 0 ? (
+                     {jobs.length === 0 ? (
             /* 空状态 - 新用户或全部完成 */
             <div 
               className="border-2 border-dashed border-[#B4C2CD] rounded-2xl p-8 text-center cursor-pointer hover:border-[#E0E9F0] hover:bg-[#E0E9F0]/20 transition-colors bg-gradient-to-r from-[#F5F8FA] to-[#E0E9F0]"
               onClick={() => setIsAddJobOpen(true)}
             >
               <Plus className="h-12 w-12 text-[#B4C2CD] mx-auto mb-4" />
-              <p className="text-gray-600 text-sm">
-                {jobs.length === 0 ? '请点击此处添加您的投递职位信息' : '恭喜！所有职位申请已完成，去OFFER页面查看结果'}
-              </p>
-              {jobs.length > 0 && (
-                <Button 
-                  onClick={() => router.push("/tasks")}
-                  className="mt-3 bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 rounded-xl"
-                >
-                  查看OFFER
-                </Button>
-              )}
+                             <p className="text-gray-600 text-sm">
+                 请点击此处添加您的投递职位信息
+               </p>
                         </div>
                      ) : (
              /* 职位卡片列表 */
@@ -758,14 +740,17 @@ export default function JobSearchAssistant() {
                {isJobListSearching && jobListSearchQuery ? (
                  // 显示搜索结果
                  jobListSearchResults.length > 0 ? (
-                   jobListSearchResults
-                     .sort((a, b) => {
-                       // 已拒绝的排在最后
-                       if (a.status === "已拒绝" && b.status !== "已拒绝") return 1
-                       if (a.status !== "已拒绝" && b.status === "已拒绝") return -1
-                       // 其他按创建时间排序
-                       return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-                     })
+                                     jobListSearchResults
+                    .sort((a, b) => {
+                      // 已拒绝的排在最后
+                      if (a.status === "已拒绝" && b.status !== "已拒绝") return 1
+                      if (a.status !== "已拒绝" && b.status === "已拒绝") return -1
+                      // OFFER的排在已拒绝之前
+                      if (a.status === "OFFER" && b.status !== "OFFER" && b.status !== "已拒绝") return 1
+                      if (a.status !== "OFFER" && b.status === "OFFER" && a.status !== "已拒绝") return -1
+                      // 其他按创建时间排序
+                      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+                    })
                      .map((job) => (
                        <Card key={job.id} className={`hover:shadow-xl transition-all duration-300 border rounded-2xl shadow-sm hover:shadow-lg ${
                          job.status === "已拒绝" 
@@ -1092,16 +1077,18 @@ export default function JobSearchAssistant() {
                      </div>
                    )
                  ) : (
-                   // 显示所有职位
-                   jobs
-                     .filter(job => job.progress < 100) // 过滤掉已完成的职位
-                     .sort((a, b) => {
-                       // 已拒绝的排在最后
-                       if (a.status === "已拒绝" && b.status !== "已拒绝") return 1
-                       if (a.status !== "已拒绝" && b.status === "已拒绝") return -1
-                       // 其他按创建时间排序
-                       return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-                     })
+                                       // 显示所有职位
+                    jobs
+                      .sort((a, b) => {
+                        // 已拒绝的排在最后
+                        if (a.status === "已拒绝" && b.status !== "已拒绝") return 1
+                        if (a.status !== "已拒绝" && b.status === "已拒绝") return -1
+                        // OFFER的排在已拒绝之前
+                        if (a.status === "OFFER" && b.status !== "OFFER" && b.status !== "已拒绝") return 1
+                        if (a.status !== "OFFER" && b.status === "OFFER" && a.status !== "已拒绝") return -1
+                        // 其他按创建时间排序
+                        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+                      })
                      .map((job) => (
                        <Card key={job.id} className={`hover:shadow-xl transition-all duration-300 border rounded-2xl shadow-sm hover:shadow-lg ${
                          job.status === "已拒绝" 
