@@ -173,211 +173,36 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
       )
     }
 
-                   if (type === 'culture' && currentCompanyData) {
+                   if (type === 'company' && currentCompanyData) {
         return (
           <div>
             <h2 className="text-2xl font-bold mb-6 flex items-center">
-              <Users className="h-6 w-6 mr-3 text-[#B4C2CD]" />
-              企业文化
+              <Building2 className="h-6 w-6 mr-3 text-[#B4C2CD]" />
+              公司简介
             </h2>
             
             <div className="space-y-6">
-              {/* 核心价值观（JSON 优先） */}
-              {((currentCompanyData.culture_json?.core_values && currentCompanyData.culture_json.core_values.length) || (currentCompanyData.culture_core_values && currentCompanyData.culture_core_values.trim())) && (
+              {/* 公司简介内容 */}
+              {currentCompanyData.culture && currentCompanyData.culture.trim() && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center">
-                    <Users className="h-5 w-5 mr-2 text-[#B4C2CD]" />
-                    核心价值观
-                  </h3>
                   <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-sm">
                     <CardContent className="pt-6">
-                      {currentCompanyData.culture_json?.core_values?.length ? (
-                        <ul className="text-sm leading-7 list-disc pl-6 space-y-1">
-                          {currentCompanyData.culture_json.core_values.map((item: string, idx: number) => (
-                            <li key={idx} className="text-gray-800">{item}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <div className="text-sm leading-relaxed space-y-4">
-                          {formatContent(currentCompanyData.culture_core_values).split('\n\n').map((paragraph, index) => (
-                            <div key={index} className="mb-4 p-3 bg-[#E0E9F0]/30 rounded-lg border-l-4 border-[#B4C2CD]">
-                              <div className="text-gray-800 whitespace-pre-line leading-6">
-                                {paragraph}
-                              </div>
+                      <div className="text-sm leading-relaxed space-y-4">
+                        {formatContent(currentCompanyData.culture).split('\n\n').map((paragraph, index) => (
+                          <div key={index} className="mb-4 p-3 bg-[#E0E9F0]/30 rounded-lg border-l-4 border-[#B4C2CD]">
+                            <div className="text-gray-800 whitespace-pre-line leading-6">
+                              {paragraph}
                             </div>
-                          ))}
-                        </div>
-                      )}
+                          </div>
+                        ))}
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
               )}
 
-              {/* 工作氛围 */}
-              {((currentCompanyData.culture_json?.work_environment && currentCompanyData.culture_json.work_environment.length) || (currentCompanyData.culture_work_environment && currentCompanyData.culture_work_environment.trim())) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center">
-                    <Users className="h-5 w-5 mr-2 text-[#B4C2CD]" />
-                    工作氛围
-                  </h3>
-                  <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-sm">
-                    <CardContent className="pt-6">
-                      {currentCompanyData.culture_json?.work_environment?.length ? (
-                        <ul className="text-sm leading-7 list-disc pl-6 space-y-1">
-                          {currentCompanyData.culture_json.work_environment.map((item: string, idx: number) => (
-                            <li key={idx} className="text-gray-800">{item}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <div className="text-sm leading-relaxed space-y-4">
-                          {formatContent(currentCompanyData.culture_work_environment).split('\n\n').map((paragraph, index) => (
-                            <div key={index} className="mb-4 p-3 bg-[#E0E9F0]/30 rounded-lg border-l-4 border-[#B4C2CD]">
-                              <div className="text-gray-800 whitespace-pre-line leading-6">
-                                {paragraph}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              {/* 福利待遇 */}
-              {((currentCompanyData.culture_json?.benefits && currentCompanyData.culture_json.benefits.length) || (currentCompanyData.culture_benefits && currentCompanyData.culture_benefits.trim())) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-4 flex items-center">
-                    <Users className="h-5 w-5 mr-2 text-[#B4C2CD]" />
-                    福利待遇
-                  </h3>
-                  <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-sm">
-                    <CardContent className="pt-6">
-                      {currentCompanyData.culture_json?.benefits?.length ? (
-                        <ul className="text-sm leading-7 list-disc pl-6 space-y-1">
-                          {currentCompanyData.culture_json.benefits.map((item: string, idx: number) => (
-                            <li key={idx} className="text-gray-800">{item}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <div className="text-sm leading-relaxed space-y-4">
-                          {formatContent(currentCompanyData.culture_benefits).split('\n\n').map((paragraph, index) => (
-                            <div key={index} className="mb-4 p-3 bg-[#E0E9F0]/30 rounded-lg border-l-4 border-[#B4C2CD]">
-                              <div className="text-gray-800 whitespace-pre-line leading-6">
-                                {paragraph}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              {/* 如果没有分离的内容，尝试在前端本地拆分 */}
-              {(
-                (!currentCompanyData.culture_core_values || !currentCompanyData.culture_core_values.trim()) &&
-                (!currentCompanyData.culture_work_environment || !currentCompanyData.culture_work_environment.trim()) &&
-                (!currentCompanyData.culture_benefits || !currentCompanyData.culture_benefits.trim()) &&
-                currentCompanyData.culture && currentCompanyData.culture.trim()
-              ) && (() => {
-                 const cultureText = formatContent(currentCompanyData.culture)
-                 // 简单的基于小标题的本地拆分
-                 const core = cultureText.split(/###?\s*核心价值观[\s\S]*/)[1]
-                 const env = cultureText.split(/###?\s*工作氛围[\s\S]*/)[1]
-                 const ben = cultureText.split(/###?\s*福利待遇[\s\S]*/)[1]
-                 const hasAny = core || env || ben
-                 if (!hasAny) {
-                   return (
-                     <div>
-                       <h3 className="text-lg font-semibold mb-4 flex items-center">
-                         <Users className="h-5 w-5 mr-2 text-gray-600" />
-                         企业文化
-                       </h3>
-                       <Card>
-                         <CardContent className="pt-6">
-                           <div className="text-sm leading-relaxed space-y-4">
-                             {cultureText.split('\n\n').map((paragraph, index) => (
-                               <div key={index} className="mb-4 p-3 bg-gray-50 rounded-lg border-l-4 border-gray-200">
-                                 <div className="text-gray-800 whitespace-pre-line leading-6">
-                                   {paragraph}
-                                 </div>
-                               </div>
-                             ))}
-                           </div>
-                         </CardContent>
-                       </Card>
-                     </div>
-                   )
-                 }
-                 return (
-                   <>
-                     {core && (
-                       <div>
-                         <h3 className="text-lg font-semibold mb-4 flex items-center">
-                           <Users className="h-5 w-5 mr-2 text-blue-600" />
-                           核心价值观
-                         </h3>
-                         <Card>
-                           <CardContent className="pt-6">
-                             <div className="text-sm leading-relaxed space-y-4">
-                               {core.split('\n\n').map((paragraph, index) => (
-                                 <div key={index} className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-200">
-                                   <div className="text-gray-800 whitespace-pre-line leading-6">{paragraph}</div>
-                                 </div>
-                               ))}
-                             </div>
-                           </CardContent>
-                         </Card>
-                       </div>
-                     )}
-                     {env && (
-                       <div>
-                         <h3 className="text-lg font-semibold mb-4 flex items-center">
-                           <Users className="h-5 w-5 mr-2 text-green-600" />
-                           工作氛围
-                         </h3>
-                         <Card>
-                           <CardContent className="pt-6">
-                             <div className="text-sm leading-relaxed space-y-4">
-                               {env.split('\n\n').map((paragraph, index) => (
-                                 <div key={index} className="mb-4 p-3 bg-green-50 rounded-lg border-l-4 border-green-200">
-                                   <div className="text-gray-800 whitespace-pre-line leading-6">{paragraph}</div>
-                                 </div>
-                               ))}
-                             </div>
-                           </CardContent>
-                         </Card>
-                       </div>
-                     )}
-                     {ben && (
-                       <div>
-                         <h3 className="text-lg font-semibold mb-4 flex items-center">
-                           <Users className="h-5 w-5 mr-2 text-purple-600" />
-                           福利待遇
-                         </h3>
-                         <Card>
-                           <CardContent className="pt-6">
-                             <div className="text-sm leading-relaxed space-y-4">
-                               {ben.split('\n\n').map((paragraph, index) => (
-                                 <div key={index} className="mb-4 p-3 bg-purple-50 rounded-lg border-l-4 border-purple-200">
-                                   <div className="text-gray-800 whitespace-pre-line leading-6">{paragraph}</div>
-                                 </div>
-                               ))}
-                             </div>
-                           </CardContent>
-                         </Card>
-                       </div>
-                     )}
-                   </>
-                 )
-               })()}
-              {/* 如果完全没有企业文化内容，显示暂无信息 */}
-              {(
-                (!currentCompanyData.culture_core_values && !currentCompanyData.culture_work_environment && !currentCompanyData.culture_benefits) &&
-                (!currentCompanyData.culture || !currentCompanyData.culture.trim())
-              ) && (
+              {/* 如果没有公司简介内容，显示暂无信息 */}
+              {(!currentCompanyData.culture || !currentCompanyData.culture.trim()) && (
                 <div className="p-4 text-sm text-gray-500 bg-gray-50 rounded-md">暂无信息</div>
               )}
             </div>
@@ -385,48 +210,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
         )
       }
 
-         if (type === 'products' && currentCompanyData) {
-       return (
-         <div>
-           <h2 className="text-2xl font-bold mb-6 flex items-center">
-             <Briefcase className="h-6 w-6 mr-3 text-green-600" />
-             产品介绍
-           </h2>
-           
-            <div className="space-y-6">
-             <div>
-               <h3 className="text-lg font-semibold mb-4 flex items-center">
-                 <Briefcase className="h-5 w-5 mr-2 text-green-600" />
-                 主要产品与技术
-               </h3>
-               <Card>
-                 <CardContent className="pt-6">
-                    {currentCompanyData.products_json?.main_products?.length ? (
-                      <ul className="text-sm leading-7 list-disc pl-6 space-y-1">
-                        {currentCompanyData.products_json.main_products.map((item: string, idx: number) => (
-                          <li key={idx} className="text-gray-800">{item}</li>
-                        ))}
-                      </ul>
-                    ) : currentCompanyData.products && currentCompanyData.products.trim() ? (
-                      <div className="text-sm leading-relaxed space-y-4">
-                        {formatContent(currentCompanyData.products).split('\n\n').map((paragraph, index) => (
-                          <div key={index} className="mb-4 p-3 bg-green-50 rounded-lg border-l-4 border-green-200">
-                            <div className="text-gray-800 whitespace-pre-line leading-6">
-                              {paragraph}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="p-4 text-sm text-gray-500 bg-gray-50 rounded-md">暂无信息</div>
-                    )}
-                 </CardContent>
-               </Card>
-             </div>
-           </div>
-         </div>
-       )
-     }
+
 
     if (position) {
       if (!currentPositionInsight) {
@@ -634,22 +418,13 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ compan
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-muted-foreground">公司信息</h4>
                       <Button
-                        variant={type === 'culture' ? 'default' : 'ghost'}
+                        variant={type === 'company' ? 'default' : 'ghost'}
                         size="sm"
                         className="w-full justify-start"
-                        onClick={() => router.push(`/insights/${encodeURIComponent(company)}?type=culture`)}
+                        onClick={() => router.push(`/insights/${encodeURIComponent(company)}?type=company`)}
                       >
-                        <Users className="h-4 w-4 mr-2" />
-                        企业文化
-                      </Button>
-                      <Button
-                        variant={type === 'products' ? 'default' : 'ghost'}
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={() => router.push(`/insights/${encodeURIComponent(company)}?type=products`)}
-                      >
-                        <Briefcase className="h-4 w-4 mr-2" />
-                        产品介绍
+                        <Building2 className="h-4 w-4 mr-2" />
+                        公司简介
                       </Button>
                     </div>
                     <Separator />

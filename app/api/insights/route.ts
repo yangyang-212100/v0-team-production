@@ -34,41 +34,35 @@ async function generateCompanyInsights(company: string, position: string) {
   
   if (!companyData) {
     console.log(`📝 首次添加${company}，生成公司级数据`)
-                   const companyPrompt = `你是专业的求职顾问。请为${company}公司生成以下信息，请严格按照以下格式回答：
+                   const companyPrompt = `你是专业的求职顾问。请为${company}公司生成公司简介，请严格按照以下格式回答：
 
-## 企业文化
+## 公司简介
 
-### 核心价值观
-请详细介绍${company}的核心价值观，包括：
-- 以客户为中心
-- 以奋斗者为本
-- 长期艰苦奋斗
-- 坚持自我批判
+请详细介绍${company}的公司信息，包括但不限于以下方面：
 
-### 工作氛围
-请详细介绍${company}的工作氛围，包括：
-- 团队协作方式
-- 工作节奏
-- 沟通方式
-- 成长机会
+### 公司概况
+- 公司背景和发展历程
+- 公司规模和行业地位
+- 主要业务领域
 
-### 福利待遇
-请详细介绍${company}的福利待遇，包括：
-- 薪资结构
-- 股权激励
-- 其他福利
-- 培训体系
+### 企业文化
+- 核心价值观和企业理念
+- 工作氛围和团队文化
+- 员工福利和待遇体系
+- 培训发展和晋升机制
 
-## 产品介绍
+### 产品技术
+- 主要产品线和服务
+- 技术栈和创新能力
+- 业务发展方向
+- 市场竞争力
 
-### 主要产品与技术
-请详细介绍${company}的产品和业务，包括：
-- 主要产品线
-- 技术栈
-- 业务方向
-- 未来发展规划
+### 对求职者的建议
+- 适合的求职者类型
+- 面试准备建议
+- 职业发展机会
 
-请确保内容具体实用，格式清晰，每个部分都要有明确的标题。请确保每个部分的内容都是独立的，不要重复。`
+请确保内容具体实用，格式清晰，对求职者有帮助。内容应该全面涵盖企业文化、产品技术等对求职有用的信息。`
     
       console.log('🤖 Calling AI for company insights with prompt:', companyPrompt.substring(0, 200) + '...')
       const companyInsights = await callDeepSeekAPI(companyPrompt)
@@ -76,17 +70,9 @@ async function generateCompanyInsights(company: string, position: string) {
          if (companyInsights) {
        console.log('✅ Company insights generated, saving to database...')
        
-        // 合并企业文化的不同部分（标题法+兜底）
-        const culturePieces = [
-          companyInsights.culture_core_values,
-          companyInsights.culture_work_environment,
-          companyInsights.culture_benefits,
-          companyInsights.culture
-        ].filter((t: string | undefined) => !!t && t.trim().length > 0)
-        const cultureContent = culturePieces.join('\n\n')
-       
-        // 为兼容当前数据库结构，仅保存已存在的列。分段内容将在前端按需拆分展示
-        const productsContent = (companyInsights.products || '').trim()
+        // 合并公司简介内容
+        const companyIntroContent = (companyInsights.company_intro || companyInsights.culture || '').trim()
+        
         // 结构化拆分到 JSON（尽量按小标题拆成条目列表）
         const toList = (text?: string) =>
           (text || '')
@@ -94,25 +80,28 @@ async function generateCompanyInsights(company: string, position: string) {
             .map(s => s.replace(/^[-*\d\.\s]+/, '').trim())
             .filter(Boolean)
 
-        const cultureJson: any = {
-          core_values: toList(companyInsights.culture_core_values),
-          work_environment: toList(companyInsights.culture_work_environment),
-          benefits: toList(companyInsights.culture_benefits)
-        }
-        // 清理空数组
-        Object.keys(cultureJson).forEach(k => { if (!cultureJson[k]?.length) delete cultureJson[k] })
-
-        const productsJson: any = {}
-        if (productsContent) {
-          productsJson.main_products = toList(productsContent)
+        const companyIntroJson: any = {}
+        if (companyIntroContent) {
+          // 尝试按小标题拆分内容
+          const sections = companyIntroContent.split(/###\s+/)
+          if (sections.length > 1) {
+                      sections.forEach((section: string) => {
+            const lines = section.split('\n')
+            const title = lines[0]?.trim()
+            const content = lines.slice(1).join('\n').trim()
+            if (title && content) {
+              companyIntroJson[title] = toList(content)
+            }
+          })
+          }
         }
 
         companyData = await companyDataApi.create({
           company_name: company,
-          culture: cultureContent,
-          products: productsContent,
-          culture_json: Object.keys(cultureJson).length ? cultureJson : undefined,
-          products_json: Object.keys(productsJson).length ? productsJson : undefined
+          culture: companyIntroContent, // 使用公司简介内容
+          products: '', // 不再单独存储产品信息
+          culture_json: Object.keys(companyIntroJson).length ? companyIntroJson : undefined,
+          products_json: undefined // 不再需要产品JSON
         } as any)
        console.log('💾 Company data saved:', companyData)
        results.companyData = companyData
@@ -295,28 +284,18 @@ function parseAIResponse(content: string) {
 
   // 1) 优先按“## 标题”切块，避免关键词误判
   const nextHeading = /\n#{2,4}\s*[^\n]+/ // 下一个二到四级标题
-  const cultureBlock = extractBetween(content, /#{2,4}\s*企业文化/, nextHeading)
-  const productsBlock = extractBetween(content, /#{2,4}\s*(产品介绍|主要产品与技术|产品与技术|主要产品|产品与业务)/, nextHeading)
+  const companyIntroBlock = extractBetween(content, /#{2,4}\s*公司简介/, nextHeading)
   const interviewBlock = extractBetween(content, /#{2,4}\s*(面试经验|面试指南|面试攻略)/, nextHeading)
   const skillsBlock = extractBetween(content, /#{2,4}\s*(能力要求|岗位要求|胜任力|技能要求)/, nextHeading)
 
-  // 企业文化子块
-  if (cultureBlock) {
-    const coreValues = extractBetween(cultureBlock, /###\s*核心价值观/, /\n###\s*[^\n]+/)
-    const workEnv = extractBetween(cultureBlock, /###\s*工作氛围/, /\n###\s*[^\n]+/)
-    const benefits = extractBetween(cultureBlock, /###\s*福利待遇/, /\n###\s*[^\n]+/)
-
-    const mergedCulture = [coreValues, workEnv, benefits].filter(Boolean).join('\n\n') || cultureBlock
-    result.culture = normalize(mergedCulture)
-    if (coreValues) result.culture_core_values = normalize(coreValues)
-    if (workEnv) result.culture_work_environment = normalize(workEnv)
-    if (benefits) result.culture_benefits = normalize(benefits)
+  // 公司简介块
+  if (companyIntroBlock) {
+    result.company_intro = normalize(companyIntroBlock)
+    result.culture = normalize(companyIntroBlock) // 兼容旧字段名
   }
 
-  const normalizedProducts = normalize(productsBlock)
   const normalizedInterview = normalize(interviewBlock)
   const normalizedSkills = normalize(skillsBlock)
-  if (normalizedProducts) result.products = normalizedProducts
   if (normalizedInterview) result.interview_experience = normalizedInterview
   if (normalizedSkills) result.skill_requirements = normalizedSkills
 
@@ -329,10 +308,7 @@ function parseAIResponse(content: string) {
   // 2) 回退：关键词法（保留原有逻辑，防止AI未按标题输出时丢失）
   const sections = {
     culture: {
-      keywords: ['企业文化', '文化', '价值观', '工作氛围', '福利待遇', '核心价值观', '以客户为中心', '以奋斗者为本', '长期艰苦奋斗', '坚持自我批判']
-    },
-    products: {
-      keywords: ['产品介绍', '主要产品', '技术栈', '业务方向', '产品与技术', '产品与业务']
+      keywords: ['公司简介', '企业文化', '文化', '价值观', '工作氛围', '福利待遇', '核心价值观', '公司概况', '产品技术', '对求职者的建议']
     },
     interview_experience: {
       keywords: ['面试经验', '面试指南', '面试攻略', '面试流程', '面试题']
@@ -350,13 +326,7 @@ function parseAIResponse(content: string) {
     for (const [name, sec] of Object.entries(sections)) {
       if (sec.keywords.some(k => trimmed.includes(k))) { matched = name; break }
     }
-    // 防止将企业文化段误判为产品介绍
-    if (matched === 'products') {
-      const cultureCues = ['以客户为中心', '以奋斗者为本', '长期艰苦奋斗', '坚持自我批判', '工作氛围', '福利待遇', '核心价值观']
-      if (cultureCues.some(c => trimmed.includes(c))) {
-        matched = 'culture'
-      }
-    }
+
     if (!matched) continue
     const clean = normalize(trimmed)
     if (!clean) continue
