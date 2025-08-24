@@ -1799,16 +1799,7 @@ AI能力特写：
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-6">
-            <Button 
-              onClick={() => {
-                setIsAddOptionsOpen(false)
-                setIsAddJobOpen(true)
-              }}
-              className="w-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
-            >
-              <Briefcase className="h-5 w-5 mr-3" />
-              添加新职位
-            </Button>
+
             <Button 
               onClick={() => {
                 setIsAddOptionsOpen(false)
@@ -1817,7 +1808,7 @@ AI能力特写：
               className="w-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
             >
               <Sparkles className="h-5 w-5 mr-3" />
-              AI解析岗位信息
+              添加新职位
             </Button>
             <Button 
               onClick={() => {
@@ -1902,7 +1893,7 @@ AI能力特写：
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
               <Sparkles className="h-5 w-5 mr-2 text-[#B4C2CD]" />
-              AI解析岗位信息
+              添加新职位
             </DialogTitle>
             <DialogDescription className="text-gray-600">
               粘贴岗位信息，AI将自动解析并提取关键信息
