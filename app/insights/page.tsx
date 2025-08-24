@@ -184,24 +184,15 @@ export default function InsightsPage() {
                     <div className="space-y-3">
                       {/* 公司级信息按钮 */}
                       {companyData && (
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => router.push(`/insights/${encodeURIComponent(company)}?type=culture`)}
+                            onClick={() => router.push(`/insights/${encodeURIComponent(company)}?type=company`)}
                             className="justify-start border-[#B4C2CD] text-[#4A5568] hover:bg-[#E0E9F0]/30 transition-colors"
                           >
-                            <Users className="h-4 w-4 mr-2" />
-                            企业文化
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => router.push(`/insights/${encodeURIComponent(company)}?type=products`)}
-                            className="justify-start border-[#B4C2CD] text-[#4A5568] hover:bg-[#E0E9F0]/30 transition-colors"
-                          >
-                            <Briefcase className="h-4 w-4 mr-2" />
-                            产品介绍
+                            <Building2 className="h-4 w-4 mr-2" />
+                            公司简介
                           </Button>
                         </div>
                       )}
