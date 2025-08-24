@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         model: 'deepseek-ai/DeepSeek-V3',
         messages: [
-                     {
-             role: 'system',
-             content: `你是一个专业的邮件解析助手。请从邮件内容中提取以下信息：
+          {
+            role: 'system',
+            content: `你是一个专业的邮件解析助手。请从邮件内容中提取以下信息：
 1. 公司名称 (company)
 2. 职位名称 (position) 
 3. 操作类型 (action) - 必须是以下之一：已投递、笔试、面试、已OFFER、已拒绝
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 - 时间格式请使用ISO 8601标准，如：2024-01-15T14:30:00Z
 - 如果没有明确时间，datetime字段可以为null或省略
 - 确保JSON格式正确，不要包含其他文本`
-           },
+          },
           {
             role: 'user',
             content: `邮件主题：${emailSubject}\n\n邮件内容：${emailContent}`
