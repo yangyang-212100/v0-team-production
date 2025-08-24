@@ -23,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Bell, Briefcase, Clock, MessageSquare, Mic, Plus, Users, Building2, Send, BarChart3, CheckCircle2, Circle, AlertCircle, Eye, Edit, ExternalLink, AlarmClock, Moon, Sun, TrendingUp, Calendar, Target, FileText, Settings, Search, LogOut, User, ChevronDown, Trash2, MapPin, DollarSign, X, Sparkles } from 'lucide-react'
 import { DateTimePicker } from "@/components/ui/date-time-picker"
-import { useJobs, useReminders, useInsights } from "@/lib/hooks"
+import { useJobs, useReminders, useInsights, useEmails } from "@/lib/hooks"
 import { Logo } from "@/components/ui/logo"
 import {
   DropdownMenu,
@@ -125,6 +125,17 @@ AI能力特写：
 杭州`)
   const [parsedJobs, setParsedJobs] = useState<any[]>([])
   const [isParsing, setIsParsing] = useState(false)
+  
+  // 邮件相关状态
+  const [isEmailParseOpen, setIsEmailParseOpen] = useState(false)
+  const [selectedEmail, setSelectedEmail] = useState<any>(null)
+  const [parsedEmailResult, setParsedEmailResult] = useState<any>(null)
+  const [isEmailParsing, setIsEmailParsing] = useState(false)
+  const [isEmailUpdating, setIsEmailUpdating] = useState(false)
+  const [updateResult, setUpdateResult] = useState<any>(null)
+  const [isUpdateSuccessDialogOpen, setIsUpdateSuccessDialogOpen] = useState(false)
+  const [updateSuccessInfo, setUpdateSuccessInfo] = useState<any>(null)
+  
   const router = useRouter()
 
   // 检查登录状态 - 只在客户端检查
@@ -174,6 +185,7 @@ AI能力特写：
   const { jobs, loading: jobsLoading, error: jobsError, addJob, updateJobStatus, deleteJob } = useJobs()
   const { reminders, loading: remindersLoading, error: remindersError, addReminder, toggleReminder } = useReminders()
   const { insights, loading: insightsLoading, error: insightsError } = useInsights()
+  const { emails, loading: emailsLoading, error: emailsError, fetchEmails } = useEmails()
 
   const handleToggleReminder = async (id: number, completed: boolean) => {
     await toggleReminder(id, completed)
@@ -328,6 +340,165 @@ AI能力特写：
   const [updatingLocationType, setUpdatingLocationType] = useState<string>("线下")
   const [updatingLocation, setUpdatingLocation] = useState<string>("")
   const [updatingSalary, setUpdatingSalary] = useState<string>("")
+
+  // 邮件解析相关函数
+  const parseEmailWithAI = async (emailContent: string, emailSubject: string) => {
+    try {
+      const response = await fetch('/api/insights/parse-emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ emailContent, emailSubject }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || '邮件解析失败')
+      }
+
+      const data = await response.json()
+      return data
+    } catch (error) {
+      console.error('AI邮件解析失败:', error)
+      throw error
+    }
+  }
+
+  const handleParseEmail = async (email: any) => {
+    setSelectedEmail(email)
+    setIsEmailParsing(true)
+    
+    try {
+      const result = await parseEmailWithAI(email.body, email.subject)
+      setParsedEmailResult(result)
+      
+      // 标记邮件为已解析
+      await fetch('/api/emails/mark-parsed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          emailId: email.id, 
+          parsedDate: new Date().toISOString() 
+        }),
+      })
+      
+      // 刷新邮件列表
+      await fetchEmails()
+      
+    } catch (error) {
+      console.error('解析邮件失败:', error)
+      alert('解析邮件失败，请重试')
+    } finally {
+      setIsEmailParsing(false)
+    }
+  }
+
+  const showUpdateSuccessDialog = (info: any) => {
+    setUpdateSuccessInfo(info)
+    setIsUpdateSuccessDialogOpen(true)
+  }
+
+  const handleRefreshJobStatus = async () => {
+    if (!emails || emails.length === 0) {
+      alert('没有邮件需要解析')
+      return
+    }
+
+    const unparsedEmails = emails.filter(email => !email.parsed_date)
+    if (unparsedEmails.length === 0) {
+      alert('所有邮件都已解析完成')
+      return
+    }
+
+    setIsEmailUpdating(true)
+    let updatedCount = 0
+    let errorCount = 0
+
+    for (const email of unparsedEmails) {
+      try {
+        const result = await parseEmailWithAI(email.body, email.subject)
+        
+        if (result && result.company && result.position && result.action) {
+          // 查找匹配的职位
+          const matchingJob = jobs.find(job => 
+            job.company === result.company && job.position === result.position
+          )
+
+          if (matchingJob) {
+            // 更新职位状态
+            let newStatus = result.action
+            let newProgress = 25
+            
+            switch (result.action) {
+              case '已投递':
+                newProgress = 25
+                break
+              case '笔试':
+                newProgress = 50
+                break
+              case '面试':
+                newProgress = 75
+                break
+              case '已OFFER':
+                newProgress = 100
+                break
+              case '已拒绝':
+                newProgress = 0
+                break
+            }
+
+            await updateJobStatus(
+              matchingJob.id, 
+              newStatus, 
+              newProgress,
+              undefined, // interview_datetime
+              undefined, // interview_location_type
+              result.url || result.location // interview_location
+            )
+
+            // 标记邮件为已解析
+            await fetch('/api/emails/mark-parsed', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ 
+                emailId: email.id, 
+                parsedDate: new Date().toISOString() 
+              }),
+            })
+
+            updatedCount++
+            
+            // 显示更新成功信息
+            showUpdateSuccessDialog({
+              company: result.company,
+              position: result.position,
+              oldStatus: matchingJob.status,
+              newStatus: newStatus,
+              emailAction: result.action
+            })
+          }
+        }
+      } catch (error) {
+        console.error(`解析邮件 ${email.id} 失败:`, error)
+        errorCount++
+      }
+    }
+
+    setIsEmailUpdating(false)
+    
+    if (updatedCount > 0) {
+      alert(`成功更新 ${updatedCount} 个职位状态${errorCount > 0 ? `，${errorCount} 个失败` : ''}`)
+      // 刷新数据
+      await fetchEmails()
+    } else if (errorCount > 0) {
+      alert(`更新失败，请重试`)
+    }
+  }
 
   const handleUpdateJobStatus = async (jobId: number, newStatus: string) => {
     if (!newStatus) {
@@ -632,7 +803,7 @@ AI能力特写：
   }
 
   // 加载和错误处理
-  if (jobsLoading || remindersLoading || insightsLoading) {
+  if (jobsLoading || remindersLoading || insightsLoading || emailsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -643,7 +814,7 @@ AI能力特写：
     )
   }
 
-    return (
+  return (
      <div className="min-h-screen bg-gradient-to-br from-[#d6e5fd] via-[#d6e5fd] to-[#f7f7f7] relative overflow-hidden">
       {/* 背景装饰 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -762,9 +933,29 @@ AI能力特写：
 
                      {/* 待办事项 */}
                          <div>
-             <h3 className="text-lg font-semibold mb-3 text-gray-800">
-               {selectedDate.getDate() === currentDate ? '今日待办:' : `${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日待办:`}
-             </h3>
+                           <div className="flex items-center justify-between mb-3">
+                             <h3 className="text-lg font-semibold text-gray-800">
+                               {selectedDate.getDate() === currentDate ? '今日待办:' : `${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日待办:`}
+                             </h3>
+                             <Button
+                               onClick={handleRefreshJobStatus}
+                               disabled={isEmailUpdating || emails.filter(email => !email.parsed_date).length === 0}
+                               className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-3 py-1 text-sm shadow-sm hover:shadow-md transition-all duration-200"
+                               title={`${emails.filter(email => !email.parsed_date).length} 封未解析邮件`}
+                             >
+                               {isEmailUpdating ? (
+                                 <div className="flex items-center space-x-2">
+                                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700"></div>
+                                   <span>解析中...</span>
+                                 </div>
+                               ) : (
+                                 <div className="flex items-center space-x-2">
+                                   <MessageSquare className="h-4 w-4" />
+                                   <span>刷新职位状态</span>
+                                 </div>
+                               )}
+                             </Button>
+                           </div>
                    <div className="space-y-3">
                                {getTasksForDate(selectedDate)
                   .filter((task) => {
@@ -2069,6 +2260,56 @@ AI能力特写：
         </DialogContent>
       </Dialog>
 
+      {/* 更新成功对话框 */}
+      <Dialog open={isUpdateSuccessDialogOpen} onOpenChange={setIsUpdateSuccessDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-green-600 flex items-center">
+              <CheckCircle2 className="h-5 w-5 mr-2" />
+              职位状态更新成功
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {updateSuccessInfo && (
+              <div className="space-y-3">
+                <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-700">公司：</span>
+                      <span className="text-gray-900">{updateSuccessInfo.company}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">职位：</span>
+                      <span className="text-gray-900">{updateSuccessInfo.position}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">原状态：</span>
+                      <span className="text-gray-900">{updateSuccessInfo.oldStatus}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">新状态：</span>
+                      <span className="text-gray-900 text-green-600 font-semibold">{updateSuccessInfo.newStatus}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="font-medium text-gray-700">邮件操作：</span>
+                      <span className="text-gray-900">{updateSuccessInfo.emailAction}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end">
+            <Button 
+              onClick={() => setIsUpdateSuccessDialogOpen(false)}
+              className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium"
+            >
+              确定
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* 底部导航栏 */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#F8FAFC]/95 backdrop-blur-sm border-t border-[#E0E9F0] px-4 py-3 shadow-lg z-50">
         <div className="flex items-center justify-between max-w-md mx-auto">
@@ -2094,7 +2335,7 @@ AI能力特写：
           >
             <span className="text-sm">OFFER</span>
           </Button>
-                                </div>
+        </div>
       </div>
     </div>
   )

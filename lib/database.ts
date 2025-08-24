@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { Job, Reminder, Insight, CompanyData, PositionInsight } from './types'
+import { Job, Reminder, Insight, CompanyData, PositionInsight, Email } from './types'
 
 // Jobs API
 export const jobsApi = {
@@ -459,6 +459,82 @@ export const positionInsightsApi = {
     } catch (error) {
       console.error('Exception in delete position insight:', error)
       return false
+    }
+  }
+} 
+
+// Emails API
+export const emailsApi = {
+  // 获取所有邮件
+  async getAll(userId?: number): Promise<Email[]> {
+    try {
+      const queryBuilder = supabase
+        .from('emails')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      const { data, error } = await (userId ? queryBuilder.eq('user_id', userId) : queryBuilder)
+      
+      if (error) {
+        console.error('Error fetching emails:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        })
+        return []
+      }
+      
+      return data || []
+    } catch (err) {
+      console.error('Unexpected error fetching emails:', err)
+      return []
+    }
+  },
+
+  // 根据邮件ID获取邮件
+  async getById(id: number): Promise<Email | null> {
+    const { data, error } = await supabase
+      .from('emails')
+      .select('*')
+      .eq('id', id)
+      .single()
+    
+    if (error) {
+      console.error('Error fetching email:', error)
+      return null
+    }
+    
+    return data
+  },
+
+  // 根据邮件ID获取邮件（用于外部系统）
+  async getByEmailId(emailId: string, source: string = 'qq_mail', userId?: number): Promise<Email | null> {
+    try {
+      const queryBuilder = supabase
+        .from('emails')
+        .select('*')
+        .eq('email_id', emailId)
+        .eq('source', source)
+      
+      if (userId) {
+        queryBuilder.eq('user_id', userId)
+      }
+      
+      const { data, error } = await queryBuilder.single()
+      
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null // 没有找到邮件
+        }
+        console.error('Error fetching email by email_id:', error)
+        return null
+      }
+      
+      return data
+    } catch (err) {
+      console.error('Unexpected error fetching email by email_id:', err)
+      return null
     }
   }
 } 

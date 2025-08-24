@@ -89,4 +89,26 @@ export interface PositionInsight {
     focus?: string[]
   }
   created_at?: string
+}
+
+export interface Email {
+  id: number
+  user_id: number
+  email_id: string
+  subject: string
+  sender: string
+  date: string
+  parsed_date?: string
+  body: string
+  created_at: string
+  source: string
+  keywords_matched?: string[]
+}
+
+export interface ParsedEmailJob {
+  company: string
+  position: string
+  action: string
+  url?: string
+  location?: string
 } 

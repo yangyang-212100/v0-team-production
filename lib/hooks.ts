@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { jobsApi, remindersApi, insightsApi, companyDataApi, positionInsightsApi } from './database'
-import { Job, Reminder, Insight, CompanyData, PositionInsight } from './types'
+import { jobsApi, remindersApi, insightsApi, companyDataApi, positionInsightsApi, emailsApi } from './database'
+import { Job, Reminder, Insight, CompanyData, PositionInsight, Email } from './types'
 
 export function useJobs() {
   const [jobs, setJobs] = useState<Job[]>([])
@@ -360,5 +360,47 @@ async function generateInsights(company: string, position: string) {
   } catch (error) {
     console.error('Error generating insights:', error)
     throw error
+  }
+} 
+
+export function useEmails() {
+  const [emails, setEmails] = useState<Email[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchEmails = useCallback(async () => {
+    try {
+      setLoading(true)
+      // 获取当前用户ID
+      const userId = typeof window !== 'undefined' ? localStorage.getItem("user_id") : null
+      const userIdNum = userId ? parseInt(userId) : undefined
+      
+      if (!userIdNum) {
+        setEmails([])
+        setError('用户未登录')
+        return
+      }
+      
+      const data = await emailsApi.getAll(userIdNum)
+      setEmails(data || [])
+      setError(null)
+    } catch (err) {
+      setError('获取邮件数据失败')
+      console.error('Error fetching emails:', err)
+      setEmails([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchEmails()
+  }, [])
+
+  return {
+    emails,
+    loading,
+    error,
+    fetchEmails
   }
 } 
