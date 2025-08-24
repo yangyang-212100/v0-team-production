@@ -407,17 +407,12 @@ AI能力特写：
       return
     }
 
-    const unparsedEmails = emails.filter(email => !email.parsed_date)
-    if (unparsedEmails.length === 0) {
-      alert('所有邮件都已解析完成')
-      return
-    }
-
     setIsEmailUpdating(true)
     let updatedCount = 0
     let errorCount = 0
 
-    for (const email of unparsedEmails) {
+    // 解析所有邮件，不管是否已经解析过
+    for (const email of emails) {
       try {
         const result = await parseEmailWithAI(email.body, email.subject)
         
@@ -454,7 +449,7 @@ AI能力特写：
               matchingJob.id, 
               newStatus, 
               newProgress,
-              undefined, // interview_datetime
+              result.datetime, // interview_datetime
               undefined, // interview_location_type
               result.url || result.location // interview_location
             )
@@ -479,7 +474,8 @@ AI能力特写：
               position: result.position,
               oldStatus: matchingJob.status,
               newStatus: newStatus,
-              emailAction: result.action
+              emailAction: result.action,
+              datetime: result.datetime
             })
           }
         }
@@ -939,9 +935,8 @@ AI能力特写：
                              </h3>
                              <Button
                                onClick={handleRefreshJobStatus}
-                               disabled={isEmailUpdating || emails.filter(email => !email.parsed_date).length === 0}
-                               className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-3 py-1 text-sm shadow-sm hover:shadow-md transition-all duration-200"
-                               title={`${emails.filter(email => !email.parsed_date).length} 封未解析邮件`}
+                               className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-3 py-1 text-sm shadow-sm hover:shadow-md transition-all duration-200 !opacity-100 !important"
+                               style={{ opacity: '1 !important' }}
                              >
                                {isEmailUpdating ? (
                                  <div className="flex items-center space-x-2">
@@ -2293,7 +2288,13 @@ AI能力特写：
                     <div className="col-span-2">
                       <span className="font-medium text-gray-700">邮件操作：</span>
                       <span className="text-gray-900">{updateSuccessInfo.emailAction}</span>
-                              </div>
+                    </div>
+                    {updateSuccessInfo.datetime && (
+                      <div className="col-span-2">
+                        <span className="font-medium text-gray-700">时间：</span>
+                        <span className="text-gray-900">{new Date(updateSuccessInfo.datetime).toLocaleString('zh-CN')}</span>
+                      </div>
+                    )}
                             </div>
                           </div>
                         </div>

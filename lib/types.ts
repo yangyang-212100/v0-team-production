@@ -111,4 +111,5 @@ export interface ParsedEmailJob {
   action: string
   url?: string
   location?: string
+  datetime?: string
 } 
