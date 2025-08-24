@@ -312,7 +312,7 @@ AI能力特写：
         }
         
         const result = await addJob(jobData, false) // 不自动生成洞察，避免重复
-        if (result) {
+    if (result) {
           successCount++
         } else {
           failCount++
@@ -814,7 +814,7 @@ AI能力特写：
     )
   }
 
-  return (
+    return (
      <div className="min-h-screen bg-gradient-to-br from-[#d6e5fd] via-[#d6e5fd] to-[#f7f7f7] relative overflow-hidden">
       {/* 背景装饰 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -932,7 +932,7 @@ AI能力特写：
                             </div>
 
                      {/* 待办事项 */}
-                         <div>
+                  <div>
                            <div className="flex items-center justify-between mb-3">
                              <h3 className="text-lg font-semibold text-gray-800">
                                {selectedDate.getDate() === currentDate ? '今日待办:' : `${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日待办:`}
@@ -947,15 +947,15 @@ AI能力特写：
                                  <div className="flex items-center space-x-2">
                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700"></div>
                                    <span>解析中...</span>
-                                 </div>
+                  </div>
                                ) : (
                                  <div className="flex items-center space-x-2">
                                    <MessageSquare className="h-4 w-4" />
                                    <span>刷新职位状态</span>
-                                 </div>
+                  </div>
                                )}
                              </Button>
-                           </div>
+                </div>
                    <div className="space-y-3">
                                {getTasksForDate(selectedDate)
                   .filter((task) => {
@@ -1031,8 +1031,8 @@ AI能力特写：
                              onCheckedChange={() => handleToggleReminder(task.id as number, !task.completed)}
                            />
                          )}
+                        </div>
                       </div>
-                    </div>
                   )})}
                {getTasksForDate(selectedDate).filter((task) => {
                  if (selectedDate.getDate() === currentDate) {
@@ -1044,10 +1044,10 @@ AI能力特写：
                  <div className="text-center py-6 text-gray-500">
                    <Calendar className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                    <p>该日期暂无待办事项</p>
-                   </div>
+                            </div>
                )}
-                         </div>
-                      </div>
+                          </div>
+                    </div>
                           </div>
 
                  {/* 职位信息区域 */}
@@ -1129,18 +1129,18 @@ AI能力特写：
                        }`}>
                          <CardContent className="p-6">
                            <div className="flex items-start justify-between mb-4">
-                             <div>
+                    <div>
                                <h3 className={`font-semibold text-lg ${
                                  job.status === "已拒绝" ? "text-gray-500" : "text-gray-900"
                                }`}>{job.company}</h3>
                                <p className={`${
                                  job.status === "已拒绝" ? "text-gray-400" : "text-gray-600"
                                }`}>{job.position}</p>
-                             </div>
+                            </div>
                              <Badge className={`${getStatusColor(job.status)} border rounded-full px-3 py-1 text-xs font-medium`}>
                                {job.status}
                              </Badge>
-                           </div>
+                          </div>
                            
                            <div className="flex items-center justify-between mb-4">
                              <div className="flex items-center space-x-2">
@@ -1150,8 +1150,8 @@ AI能力特写：
                                <span className={`text-sm font-medium ${
                                  job.status === "已拒绝" ? "text-gray-400" : "text-[#B4C2CD]"
                                }`}>{job.progress}%</span>
-                             </div>
-                           </div>
+                    </div>
+                  </div>
 
                            <div className="mb-4">
                              <div className={`w-full rounded-full h-2 ${
@@ -1165,8 +1165,8 @@ AI能力特写：
                            </div>
 
                            <div className="flex space-x-2 mt-4">
-                             <Dialog>
-                               <DialogTrigger asChild>
+              <Dialog>
+                <DialogTrigger asChild>
                                  <Button variant="outline" size="sm" className="flex-1">
                                    <Eye className="h-4 w-4 mr-1" />
                                    详情
@@ -1175,28 +1175,28 @@ AI能力特写：
                                <DialogContent className="max-w-4xl max-h-[90vh] bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl overflow-hidden">
                                  <DialogHeader className="px-6 py-4 border-b border-[#E0E9F0]">
                                    <DialogTitle className="flex items-center justify-between text-xl font-bold text-gray-800">
-                                     <div>
+                        <div>
                                        <h2 className="text-2xl font-bold text-gray-800 mb-1">{job.company}</h2>
                                        <p className="text-lg text-gray-600">{job.position}</p>
-                                     </div>
+                        </div>
                                      <Badge className={`${getStatusColor(job.status)} text-sm px-3 py-1`}>{job.status}</Badge>
                                    </DialogTitle>
-                                 </DialogHeader>
+                  </DialogHeader>
                                  <div className="px-6 py-4 space-y-6 overflow-y-auto max-h-[calc(90vh-120px)]">
                                    {/* 基本信息 */}
                                    <div className="grid grid-cols-3 gap-4">
                                      <div className="bg-[#E0E9F0]/20 rounded-lg p-3">
                                        <Label className="text-gray-700 font-medium text-sm">工作地点</Label>
                                        <p className="text-gray-800 mt-1 font-medium">{job.location || '未填写'}</p>
-                                     </div>
+                        </div>
                                      <div className="bg-[#E0E9F0]/20 rounded-lg p-3">
                                        <Label className="text-gray-700 font-medium text-sm">工作类型</Label>
                                        <p className="text-gray-800 mt-1 font-medium">{job.type || '全职'}</p>
-                                     </div>
+                      </div>
                                      <div className="bg-[#E0E9F0]/20 rounded-lg p-3">
                                        <Label className="text-gray-700 font-medium text-sm">申请进度</Label>
                                        <p className="text-gray-800 mt-1 font-medium">{job.progress}%</p>
-                                     </div>
+                  </div>
                                    </div>
 
                                    {/* 面试信息 */}
@@ -1207,13 +1207,13 @@ AI能力特写：
                                          {job.interview_datetime && (
                                            <div className="flex items-center space-x-2">
                                              <Clock className="h-4 w-4 text-[#B4C2CD]" />
-                                             <div>
+                        <div>
                                                <p className="text-sm text-gray-500">面试时间</p>
                                                <p className="font-medium text-gray-800">
                                                  {new Date(job.interview_datetime).toLocaleString('zh-CN')}
                                                </p>
-                                             </div>
-                                           </div>
+                        </div>
+                      </div>
                                          )}
                                          {job.interview_location && (
                                            <div className="flex items-start space-x-2">
@@ -1237,9 +1237,9 @@ AI能力特写：
                                                      跳转会议链接
                                                    </Button>
                                                  )}
-                                               </div>
-                                             </div>
-                                           </div>
+                          </div>
+                        </div>
+                  </div>
                                          )}
                                        </div>
                                      </div>
@@ -1270,9 +1270,9 @@ AI能力特写：
                                      <div className="mt-2 bg-[#E0E9F0]/10 rounded-lg p-4 border border-[#E0E9F0]/30 max-h-48 overflow-y-auto">
                                        <p className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
                                          {job.requirements || job.description || '暂无岗位JD信息'}
-                                       </p>
-                                     </div>
-                                   </div>
+                          </p>
+                        </div>
+                      </div>
 
                                    {/* 申请日期 */}
                                    <div className="text-sm text-gray-500 pb-4">
@@ -1313,7 +1313,7 @@ AI能力特写：
                                    <DialogDescription className="text-gray-600 mt-1">
                                      更新 <span className="font-medium text-gray-700">{job.company}</span> - <span className="font-medium text-gray-700">{job.position}</span> 的申请状态
                                    </DialogDescription>
-                                 </DialogHeader>
+                  </DialogHeader>
                                  
                                  <div className="py-6 space-y-6 px-1 overflow-y-auto max-h-[calc(85vh-200px)]">
                                    {/* 新状态选择 */}
@@ -1342,9 +1342,9 @@ AI能力特写：
                                        面试安排
                                      </h4>
                                      
-                                     <div className="space-y-4">
+                  <div className="space-y-4">
                                        {/* 时间选择 */}
-                                       <div>
+                    <div>
                                          <Label className="text-gray-700 font-medium text-sm mb-2 block">面试时间</Label>
                                          <DateTimePicker
                                            value={updatingDateTime}
@@ -1353,7 +1353,7 @@ AI能力特写：
                                        </div>
 
                                        {/* 地点类型 */}
-                                       <div>
+                            <div>
                                          <Label className="text-gray-700 font-medium text-sm mb-2 block">面试方式</Label>
                                          <Select onValueChange={(value) => setUpdatingLocationType(value)} value={updatingLocationType}>
                                            <SelectTrigger className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white">
@@ -1364,8 +1364,8 @@ AI能力特写：
                                              <SelectItem value="线上">线上面试</SelectItem>
                                            </SelectContent>
                                          </Select>
-                                       </div>
-                                     </div>
+                            </div>
+                          </div>
                                      
                                      {/* 地点/链接输入 */}
                                      <div className="mt-4">
@@ -1378,7 +1378,7 @@ AI能力特写：
                                          placeholder={updatingLocationType === "线上" ? "请输入会议链接（如：https://meet.google.com/xxx-yyyy-zzz）" : "请输入具体地点（如：北京市朝阳区xxx大厦15楼）"}
                                          className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white"
                                        />
-                                     </div>
+                    </div>
                                    </div>
 
                                    {/* 薪资信息 */}
@@ -1388,7 +1388,7 @@ AI能力特写：
                                        薪资信息
                                      </h4>
                                      
-                                     <div>
+                    <div>
                                        <Label className="text-gray-700 font-medium text-sm mb-2 block">薪资范围</Label>
                                        <Input
                                          value={updatingSalary}
@@ -1396,9 +1396,9 @@ AI能力特写：
                                          placeholder="请输入薪资范围（如：15-25K、面议等）"
                                          className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white"
                                        />
-                                     </div>
-                                   </div>
-                                 </div>
+                            </div>
+                          </div>
+                    </div>
                                  
                                  <div className="flex justify-end space-x-3 pt-4 pb-4 border-t border-[#E0E9F0] bg-white px-6 flex-shrink-0">
                                    <Button 
@@ -1422,9 +1422,9 @@ AI能力特写：
                                    >
                                      确认更新
                                    </Button>
-                                 </div>
-                               </DialogContent>
-                             </Dialog>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
                              <Button 
                                variant="outline" 
@@ -1435,7 +1435,7 @@ AI能力特写：
                                <Trash2 className="h-4 w-4 mr-1" />
                                删除
                              </Button>
-                           </div>
+                  </div>
                          </CardContent>
                        </Card>
                      ))
@@ -1467,18 +1467,18 @@ AI能力特写：
                        }`}>
                          <CardContent className="p-6">
                            <div className="flex items-start justify-between mb-4">
-                             <div>
+                  <div>
                                <h3 className={`font-semibold text-lg ${
                                  job.status === "已拒绝" ? "text-gray-500" : "text-gray-900"
                                }`}>{job.company}</h3>
                                <p className={`${
                                  job.status === "已拒绝" ? "text-gray-400" : "text-gray-600"
                                }`}>{job.position}</p>
-                             </div>
+                                </div>
                              <Badge className={`${getStatusColor(job.status)} border rounded-full px-3 py-1 text-xs font-medium`}>
                                {job.status}
                              </Badge>
-                           </div>
+                              </div>
                            
                            <div className="flex items-center justify-between mb-4">
                              <div className="flex items-center space-x-2">
@@ -1488,8 +1488,8 @@ AI能力特写：
                                <span className={`text-sm font-medium ${
                                  job.status === "已拒绝" ? "text-gray-400" : "text-[#B4C2CD]"
                                }`}>{job.progress}%</span>
-                             </div>
-                           </div>
+                            </div>
+                          </div>
 
                            <div className="mb-4">
                              <div className={`w-full rounded-full h-2 ${
@@ -1499,8 +1499,8 @@ AI能力特写：
                                  className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(job.status)}`}
                                  style={{ width: `${job.progress}%` }}
                                />
-                             </div>
-                           </div>
+                    </div>
+                  </div>
 
                            <div className="flex space-x-2 mt-4">
                              <Dialog>
@@ -1513,10 +1513,10 @@ AI能力特写：
                                <DialogContent className="max-w-4xl max-h-[90vh] bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl overflow-hidden">
                                  <DialogHeader className="px-6 py-4 border-b border-[#E0E9F0]">
                                    <DialogTitle className="flex items-center justify-between text-xl font-bold text-gray-800">
-                                     <div>
+                  <div>
                                        <h2 className="text-2xl font-bold text-gray-800 mb-1">{job.company}</h2>
                                        <p className="text-lg text-gray-600">{job.position}</p>
-                                     </div>
+                                </div>
                                      <Badge className={`${getStatusColor(job.status)} text-sm px-3 py-1`}>{job.status}</Badge>
                                    </DialogTitle>
                                  </DialogHeader>
@@ -1526,16 +1526,16 @@ AI能力特写：
                                      <div className="bg-[#E0E9F0]/20 rounded-lg p-3">
                                        <Label className="text-gray-700 font-medium text-sm">工作地点</Label>
                                        <p className="text-gray-800 mt-1 font-medium">{job.location || '未填写'}</p>
-                                     </div>
+                              </div>
                                      <div className="bg-[#E0E9F0]/20 rounded-lg p-3">
                                        <Label className="text-gray-700 font-medium text-sm">工作类型</Label>
                                        <p className="text-gray-800 mt-1 font-medium">{job.type || '全职'}</p>
-                                     </div>
+                            </div>
                                      <div className="bg-[#E0E9F0]/20 rounded-lg p-3">
                                        <Label className="text-gray-700 font-medium text-sm">申请进度</Label>
                                        <p className="text-gray-800 mt-1 font-medium">{job.progress}%</p>
-                                     </div>
-                                   </div>
+                    </div>
+                  </div>
 
                                    {/* 面试信息 */}
                                    {(job.interview_datetime || job.interview_location) && (
@@ -1545,13 +1545,13 @@ AI能力特写：
                                          {job.interview_datetime && (
                                            <div className="flex items-center space-x-2">
                                              <Clock className="h-4 w-4 text-[#B4C2CD]" />
-                                             <div>
+                  <div>
                                                <p className="text-sm text-gray-500">面试时间</p>
                                                <p className="font-medium text-gray-800">
                                                  {new Date(job.interview_datetime).toLocaleString('zh-CN')}
                                                </p>
-                                             </div>
-                                           </div>
+                                </div>
+                              </div>
                                          )}
                                          {job.interview_location && (
                                            <div className="flex items-start space-x-2">
@@ -1575,12 +1575,12 @@ AI能力特写：
                                                      跳转会议链接
                                                    </Button>
                                                  )}
-                                               </div>
-                                             </div>
-                                           </div>
+                            </div>
+                          </div>
+                    </div>
                                          )}
-                                       </div>
-                                     </div>
+                  </div>
+                </div>
                                    )}
 
                                    {/* 投递网址 */}
@@ -1589,7 +1589,7 @@ AI能力特写：
                                        <Label className="text-gray-700 font-medium">投递网址</Label>
                                        <div className="mt-2 flex items-center space-x-3">
                                          <span className="text-sm text-gray-600 flex-1 truncate">{job.url}</span>
-                                         <Button
+                  <Button
                                            size="sm"
                                            variant="outline"
                                            className="border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30"
@@ -1597,26 +1597,26 @@ AI能力特写：
                                          >
                                            <ExternalLink className="h-4 w-4 mr-1" />
                                            跳转
-                                         </Button>
-                                       </div>
-                                     </div>
-                                   )}
+                  </Button>
+                </div>
+                  </div>
+                )}
 
                                    {/* 岗位JD */}
-                                   <div>
+              <div>
                                      <Label className="text-gray-700 font-medium">岗位JD</Label>
                                      <div className="mt-2 bg-[#E0E9F0]/10 rounded-lg p-4 border border-[#E0E9F0]/30 max-h-48 overflow-y-auto">
                                        <p className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
                                          {job.requirements || job.description || '暂无岗位JD信息'}
                                        </p>
-                                     </div>
-                                   </div>
+              </div>
+            </div>
 
                                    {/* 申请日期 */}
                                    <div className="text-sm text-gray-500 pb-4">
                                      申请日期：{job.applied_date}
-                                   </div>
-                                 </div>
+                        </div>
+                        </div>
                                </DialogContent>
                              </Dialog>
 
@@ -1634,7 +1634,7 @@ AI能力特写：
                              >
                                <Edit className="h-4 w-4 mr-1" />
                                更新
-                             </Button>
+                        </Button>
 
                              <Dialog open={updatingJobId === job.id} onOpenChange={(open) => {
                                if (!open) {
@@ -1647,11 +1647,11 @@ AI能力特写：
                                    <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
                                      <Edit className="h-5 w-5 mr-2 text-[#B4C2CD]" />
                                      更新申请状态
-                                   </DialogTitle>
+                      </DialogTitle>
                                    <DialogDescription className="text-gray-600 mt-1">
                                      更新 <span className="font-medium text-gray-700">{job.company}</span> - <span className="font-medium text-gray-700">{job.position}</span> 的申请状态
-                                   </DialogDescription>
-                                 </DialogHeader>
+                      </DialogDescription>
+                    </DialogHeader>
                                  
                                  <div className="py-6 space-y-6 px-1 overflow-y-auto max-h-[calc(85vh-200px)]">
                                    {/* 新状态选择 */}
@@ -1671,7 +1671,7 @@ AI能力特写：
                                          <SelectItem value="已拒绝">已拒绝</SelectItem>
                                        </SelectContent>
                                      </Select>
-                                   </div>
+                      </div>
                                    
                                    {/* 面试安排 */}
                                    <div className="bg-[#F5F8FA] rounded-lg p-4 border border-[#E0E9F0]/30">
@@ -1688,10 +1688,10 @@ AI能力特写：
                                            value={updatingDateTime}
                                            onChange={setUpdatingDateTime}
                                          />
-                                       </div>
+            </div>
 
                                        {/* 地点类型 */}
-                                       <div>
+                            <div>
                                          <Label className="text-gray-700 font-medium text-sm mb-2 block">面试方式</Label>
                                          <Select onValueChange={(value) => setUpdatingLocationType(value)} value={updatingLocationType}>
                                            <SelectTrigger className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white">
@@ -1702,8 +1702,8 @@ AI能力特写：
                                              <SelectItem value="线上">线上面试</SelectItem>
                                            </SelectContent>
                                          </Select>
-                                       </div>
-                                     </div>
+                            </div>
+                          </div>
                                      
                                      {/* 地点/链接输入 */}
                                      <div className="mt-4">
@@ -1716,8 +1716,8 @@ AI能力特写：
                                          placeholder={updatingLocationType === "线上" ? "请输入会议链接（如：https://meet.google.com/xxx-yyyy-zzz）" : "请输入具体地点（如：北京市朝阳区xxx大厦15楼）"}
                                          className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white"
                                        />
-                                     </div>
-                                   </div>
+                        </div>
+                          </div>
 
                                    {/* 薪资信息 */}
                                    <div className="bg-[#F5F8FA] rounded-lg p-4 border border-[#E0E9F0]/30">
@@ -1734,9 +1734,9 @@ AI能力特写：
                                          placeholder="请输入薪资范围（如：15-25K、面议等）"
                                          className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white"
                                        />
-                                     </div>
-                                   </div>
-                                 </div>
+                          </div>
+                          </div>
+                        </div>
                                  
                                  <div className="flex justify-end space-x-3 pt-4 pb-4 border-t border-[#E0E9F0] bg-white px-6 flex-shrink-0">
                                    <Button 
@@ -1760,7 +1760,7 @@ AI能力特写：
                                    >
                                      确认更新
                                    </Button>
-                                 </div>
+                        </div>
                                </DialogContent>
                              </Dialog>
 
@@ -1772,24 +1772,24 @@ AI能力特写：
                              >
                                <Trash2 className="h-4 w-4 mr-1" />
                                删除
-                             </Button>
-                           </div>
-                         </CardContent>
-                       </Card>
+                        </Button>
+                </div>
+              </CardContent>
+            </Card>
                      ))
                  )}
-               </div>
+              </div>
            )}
 
                                            {/* 添加职位对话框 */}
-                <Dialog open={isAddJobOpen} onOpenChange={setIsAddJobOpen}>
+              <Dialog open={isAddJobOpen} onOpenChange={setIsAddJobOpen}>
               <DialogContent className="max-w-3xl w-[95vw] h-[90vh] bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl flex flex-col">
                    <DialogHeader className="flex-shrink-0">
                  <DialogTitle className="text-xl font-bold text-gray-800">添加新的职位申请</DialogTitle>
                  <DialogDescription className="text-gray-600">
-                       记录您的求职申请，跟踪进度
-                     </DialogDescription>
-                   </DialogHeader>
+                      记录您的求职申请，跟踪进度
+                    </DialogDescription>
+                  </DialogHeader>
                                       <div className="flex-1 overflow-y-auto">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 py-4">
                     <div>
@@ -1844,26 +1844,26 @@ AI能力特写：
                     </div>
                                  <div className="col-span-1 sm:col-span-2">
                    <Label htmlFor="url" className="text-gray-700 font-medium text-sm mb-2 block">投递网址</Label>
-                       <Input
+                      <Input
                        id="url"
                        value={newJob.url}
                        onChange={(e) => setNewJob({ ...newJob, url: e.target.value })}
                        placeholder="请输入投递网址（可选）"
                        className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-11 text-gray-700 placeholder-gray-500"
                        autoComplete="off"
-                       />
-                     </div>
+                      />
+                    </div>
                      <div className="col-span-1 sm:col-span-2">
                     <Label htmlFor="description" className="text-gray-700 font-medium text-sm mb-2 block">岗位JD</Label>
-                       <Textarea
-                         id="description"
-                         value={newJob.description}
-                         onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
+                      <Textarea
+                        id="description"
+                        value={newJob.description}
+                        onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
                       placeholder="请输入岗位JD描述"
                       rows={4}
                       className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 placeholder-gray-500"
-                       />
-                     </div>
+                      />
+                    </div>
                      <div className="col-span-1 sm:col-span-2">
                    <div className="flex items-center space-x-3 bg-[#F5F8FA] rounded-lg p-4 border border-[#E0E9F0]/30">
                      <Checkbox
@@ -1879,8 +1879,8 @@ AI能力特写：
                        <p className="text-sm text-gray-500 mt-1">
                          勾选后将自动生成该公司的企业文化、产品介绍和面试经验等洞察信息
                        </p>
-                     </div>
-                   </div>
+                    </div>
+                  </div>
                                          </div>
                                        </div>
                                       </div>
@@ -1890,17 +1890,17 @@ AI能力特写：
                    onClick={() => setIsAddJobOpen(false)}
                    className="border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30 px-6 py-2"
                  >
-                       取消
-                     </Button>
+                      取消
+                    </Button>
                  <Button 
                    onClick={addNewJob}
                    className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200"
                  >
-                       添加申请
-                     </Button>
-                   </div>
-                 </DialogContent>
-               </Dialog>
+                      添加申请
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
           {/* 退出确认对话框 */}
           <Dialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
@@ -1928,7 +1928,7 @@ AI能力特写：
                 >
                   确认退出
                     </Button>
-                  </div>
+            </div>
                 </DialogContent>
               </Dialog>
 
@@ -1952,8 +1952,8 @@ AI能力特写：
                   })
                       .map((reminder) => (
                     <div key={reminder.id} className="bg-gray-50 rounded-lg p-4">
-                          <div className="flex items-center justify-between">
-                        <div>
+                    <div className="flex items-center justify-between">
+                      <div>
                           <p className="font-medium text-gray-900">{reminder.title}</p>
                           <p className="text-sm text-gray-600">时间: {reminder.time}</p>
                           <p className="text-sm text-gray-600">地点: {reminder.company}</p>
@@ -1962,8 +1962,8 @@ AI能力特写：
                                 checked={reminder.completed}
                                 onCheckedChange={() => handleToggleReminder(reminder.id, !reminder.completed)}
                               />
-                                </div>
-                              </div>
+                      </div>
+                        </div>
                   ))}
                 {reminders.filter((reminder) => {
                   const reminderDate = reminder.date === '今天' ? today : new Date(reminder.date)
@@ -1971,11 +1971,11 @@ AI能力特写：
                 }).length === 0 && (
                   <p className="text-gray-500 text-center py-4">这一天没有任务</p>
                 )}
-                            </div>
+                        </div>
             </DialogContent>
           </Dialog>
-                          </div>
                         </div>
+                      </div>
 
       {/* 加号选项对话框 */}
       <Dialog open={isAddOptionsOpen} onOpenChange={setIsAddOptionsOpen}>
@@ -1999,7 +1999,7 @@ AI能力特写：
             >
               <Briefcase className="h-5 w-5 mr-3" />
               添加新职位
-            </Button>
+                            </Button>
             <Button 
               onClick={() => {
                 setIsAddOptionsOpen(false)
@@ -2027,17 +2027,17 @@ AI能力特写：
       {/* 职位搜索对话框 */}
       <Dialog open={isSearchJobOpen} onOpenChange={setIsSearchJobOpen}>
         <DialogContent className="max-w-2xl bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl">
-          <DialogHeader>
+                            <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
               <Search className="h-5 w-5 mr-2 text-[#B4C2CD]" />
               搜索职位添加提醒
-            </DialogTitle>
+                              </DialogTitle>
             <DialogDescription className="text-gray-600">
               搜索现有职位，为其添加面试/笔试提醒
             </DialogDescription>
-          </DialogHeader>
+                            </DialogHeader>
           <div className="py-6 space-y-6">
-            <div>
+                                <div>
               <Input
                 value={searchQuery}
                 onChange={(e) => {
@@ -2048,7 +2048,7 @@ AI能力特写：
                 className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-12 text-gray-700 placeholder-gray-500"
                 autoComplete="off"
               />
-            </div>
+                                </div>
             <div className="max-h-96 overflow-y-auto space-y-3">
               {searchResults.length > 0 ? (
                 searchResults.map((job) => (
@@ -2059,14 +2059,14 @@ AI能力特写：
                           <h3 className="font-semibold text-gray-800 text-lg">{job.company}</h3>
                           <p className="text-gray-600 text-base">{job.position}</p>
                           <p className="text-sm text-gray-500 mt-1">当前状态: {job.status}</p>
-                        </div>
+                                </div>
                         <Button
                           onClick={() => handleSelectJobForUpdate(job)}
                           className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium shadow-sm hover:shadow-md transition-all duration-200"
                         >
                           选择
                         </Button>
-                      </div>
+                                </div>
                     </CardContent>
                   </Card>
                 ))
@@ -2075,17 +2075,17 @@ AI能力特写：
                   <Search className="h-12 w-12 mx-auto mb-3 text-gray-400" />
                   <p className="text-lg font-medium">未找到相关职位</p>
                   <p className="text-sm text-gray-400 mt-1">请尝试其他关键词</p>
-                </div>
+                                </div>
               ) : (
                 <div className="text-center py-12 text-gray-500">
                   <Search className="h-12 w-12 mx-auto mb-3 text-gray-400" />
                   <p className="text-lg font-medium">请输入关键词开始搜索</p>
-                </div>
+                              </div>
               )}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
 
       {/* AI解析岗位信息对话框 */}
       <Dialog open={isAIJobParseOpen} onOpenChange={setIsAIJobParseOpen}>
@@ -2097,13 +2097,13 @@ AI能力特写：
             </DialogTitle>
             <DialogDescription className="text-gray-600">
               粘贴岗位信息，AI将自动解析并提取关键信息
-            </DialogDescription>
-          </DialogHeader>
+                              </DialogDescription>
+                            </DialogHeader>
           
           <div className="flex-1 overflow-y-auto">
             <div className="space-y-6 py-4">
               {/* 输入区域 */}
-              <div>
+                              <div>
                 <Label htmlFor="aiJobText" className="text-gray-700 font-medium text-sm mb-3 block">
                   岗位信息文本（最大5000字符）
                 </Label>
@@ -2137,12 +2137,12 @@ AI能力特写：
                       </>
                     )}
                   </Button>
-                </div>
-              </div>
+                              </div>
+                            </div>
 
               {/* 解析结果预览 */}
               {parsedJobs.length > 0 && (
-                <div>
+              <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">
                     解析结果预览 ({parsedJobs.length} 个岗位)
                   </h3>
@@ -2151,9 +2151,9 @@ AI能力特写：
                       <Card key={index} className="border-[#E0E9F0] bg-white/90 backdrop-blur-sm">
                         <CardContent className="p-4">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
+                    <div>
                               <Label className="text-gray-700 font-medium text-sm">公司名称</Label>
-                              <Input
+                      <Input
                                 value={job.company}
                                 onChange={(e) => {
                                   const updatedJobs = [...parsedJobs]
@@ -2161,11 +2161,11 @@ AI能力特写：
                                   setParsedJobs(updatedJobs)
                                 }}
                                 className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
-                              />
-                            </div>
-                            <div>
+                      />
+                    </div>
+                      <div>
                               <Label className="text-gray-700 font-medium text-sm">职位名称</Label>
-                              <Input
+                        <Input
                                 value={job.position}
                                 onChange={(e) => {
                                   const updatedJobs = [...parsedJobs]
@@ -2173,11 +2173,11 @@ AI能力特写：
                                   setParsedJobs(updatedJobs)
                                 }}
                                 className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
-                              />
-                            </div>
-                            <div>
+                        />
+                      </div>
+                      <div>
                               <Label className="text-gray-700 font-medium text-sm">工作地点</Label>
-                              <Input
+                        <Input
                                 value={job.location}
                                 onChange={(e) => {
                                   const updatedJobs = [...parsedJobs]
@@ -2186,10 +2186,10 @@ AI能力特写：
                                 }}
                                 className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
                               />
-                            </div>
-                            <div>
+                    </div>
+                    <div>
                               <Label className="text-gray-700 font-medium text-sm">薪资待遇</Label>
-                              <Input
+                      <Input
                                 value={job.salary}
                                 onChange={(e) => {
                                   const updatedJobs = [...parsedJobs]
@@ -2197,8 +2197,8 @@ AI能力特写：
                                   setParsedJobs(updatedJobs)
                                 }}
                                 className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
-                              />
-                            </div>
+                      />
+                    </div>
                             <div className="col-span-1 sm:col-span-2">
                               <Label className="text-gray-700 font-medium text-sm">岗位描述</Label>
                               <Textarea
@@ -2211,7 +2211,7 @@ AI能力特写：
                                 rows={3}
                                 className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
                               />
-                            </div>
+                      </div>
                             <div className="col-span-1 sm:grid-cols-2">
                               <Label className="text-gray-700 font-medium text-sm">岗位要求</Label>
                               <Textarea
@@ -2224,8 +2224,8 @@ AI能力特写：
                                 rows={3}
                                 className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
                               />
-                            </div>
-                          </div>
+                      </div>
+                    </div>
                         </CardContent>
                       </Card>
                     ))}
@@ -2246,19 +2246,19 @@ AI能力特写：
               }}
               className="border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30 px-6 py-2"
             >
-              取消
-            </Button>
+                      取消
+                    </Button>
             {parsedJobs.length > 0 && (
               <Button 
                 onClick={addParsedJobs}
                 className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200"
               >
                 确认添加 ({parsedJobs.length} 个岗位)
-              </Button>
+                    </Button>
             )}
-          </div>
-        </DialogContent>
-      </Dialog>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
       {/* 更新成功对话框 */}
       <Dialog open={isUpdateSuccessDialogOpen} onOpenChange={setIsUpdateSuccessDialogOpen}>
@@ -2271,34 +2271,34 @@ AI能力特写：
           </DialogHeader>
           <div className="py-4">
             {updateSuccessInfo && (
-              <div className="space-y-3">
+                  <div className="space-y-3">
                 <div className="bg-green-50 rounded-lg p-4 border border-green-200">
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
+                              <div>
                       <span className="font-medium text-gray-700">公司：</span>
                       <span className="text-gray-900">{updateSuccessInfo.company}</span>
-                    </div>
+                                </div>
                     <div>
                       <span className="font-medium text-gray-700">职位：</span>
                       <span className="text-gray-900">{updateSuccessInfo.position}</span>
-                    </div>
+                              </div>
                     <div>
                       <span className="font-medium text-gray-700">原状态：</span>
                       <span className="text-gray-900">{updateSuccessInfo.oldStatus}</span>
-                    </div>
-                    <div>
+                            </div>
+                              <div>
                       <span className="font-medium text-gray-700">新状态：</span>
                       <span className="text-gray-900 text-green-600 font-semibold">{updateSuccessInfo.newStatus}</span>
-                    </div>
+                                </div>
                     <div className="col-span-2">
                       <span className="font-medium text-gray-700">邮件操作：</span>
                       <span className="text-gray-900">{updateSuccessInfo.emailAction}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
             )}
-          </div>
+                  </div>
           <div className="flex justify-end">
             <Button 
               onClick={() => setIsUpdateSuccessDialogOpen(false)}
@@ -2306,7 +2306,7 @@ AI能力特写：
             >
               确定
             </Button>
-          </div>
+            </div>
         </DialogContent>
       </Dialog>
 
@@ -2335,7 +2335,7 @@ AI能力特写：
           >
             <span className="text-sm">OFFER</span>
           </Button>
-        </div>
+                  </div>
       </div>
     </div>
   )
