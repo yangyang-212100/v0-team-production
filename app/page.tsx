@@ -311,7 +311,7 @@ AI能力特写：
           url: job.url || "", // 确保URL字段被正确传递
         }
         
-        const result = await addJob(jobData, false) // 不自动生成洞察，避免重复
+        const result = await addJob(jobData, generateInsight) // 根据用户选择决定是否生成洞察
     if (result) {
           successCount++
         } else {
@@ -340,6 +340,11 @@ AI能力特写：
   const [updatingLocationType, setUpdatingLocationType] = useState<string>("线下")
   const [updatingLocation, setUpdatingLocation] = useState<string>("")
   const [updatingSalary, setUpdatingSalary] = useState<string>("")
+  
+  // 洞察相关状态
+  const [insightsJobId, setInsightsJobId] = useState<number | null>(null)
+  const [insightsData, setInsightsData] = useState<any>(null)
+  const [isInsightsLoading, setIsInsightsLoading] = useState(false)
 
   // 邮件解析相关函数
   const parseEmailWithAI = async (emailContent: string, emailSubject: string) => {
@@ -399,6 +404,38 @@ AI能力特写：
   const showUpdateSuccessDialog = (info: any) => {
     setUpdateSuccessInfo(info)
     setIsUpdateSuccessDialogOpen(true)
+  }
+
+  // 获取职位洞察信息
+  const fetchJobInsights = async (company: string, position: string) => {
+    try {
+      setIsInsightsLoading(true)
+      
+      // 直接从数据库获取洞察数据
+      const companyDataResponse = await fetch(`/api/insights/company?company=${encodeURIComponent(company)}`)
+      const positionDataResponse = await fetch(`/api/insights/position?company=${encodeURIComponent(company)}&position=${encodeURIComponent(position)}`)
+      
+      let companyData = null
+      let positionData = null
+      
+      if (companyDataResponse.ok) {
+        companyData = await companyDataResponse.json()
+      }
+      
+      if (positionDataResponse.ok) {
+        positionData = await positionDataResponse.json()
+      }
+      
+      const data = { companyData, positionData }
+      setInsightsData(data)
+      return data
+    } catch (error) {
+      console.error('获取洞察信息失败:', error)
+      alert('获取洞察信息失败，请重试')
+      return null
+    } finally {
+      setIsInsightsLoading(false)
+    }
   }
 
   const handleRefreshJobStatus = async () => {
@@ -1280,17 +1317,13 @@ AI能力特写：
                              <Button 
                                size="sm" 
                                className="flex-1 bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 border border-[#B4C2CD]"
-                               onClick={() => {
-                                 setUpdatingJobId(job.id)
-                                 setUpdatingStatus(job.status)
-                                 setUpdatingDateTime("")
-                                 setUpdatingLocationType("线下")
-                                 setUpdatingLocation("")
-                                 setUpdatingSalary(job.salary || "")
+                               onClick={async () => {
+                                 setInsightsJobId(job.id)
+                                 await fetchJobInsights(job.company, job.position)
                                }}
                              >
-                               <Edit className="h-4 w-4 mr-1" />
-                               更新
+                               <Eye className="h-4 w-4 mr-1" />
+                               洞察
                              </Button>
 
                              <Dialog open={updatingJobId === job.id} onOpenChange={(open) => {
@@ -1618,17 +1651,13 @@ AI能力特写：
                              <Button 
                                size="sm" 
                                className="flex-1 bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 border border-[#B4C2CD]"
-                               onClick={() => {
-                                 setUpdatingJobId(job.id)
-                                 setUpdatingStatus(job.status)
-                                 setUpdatingDateTime("")
-                                 setUpdatingLocationType("线下")
-                                 setUpdatingLocation("")
-                                 setUpdatingSalary(job.salary || "")
+                               onClick={async () => {
+                                 setInsightsJobId(job.id)
+                                 await fetchJobInsights(job.company, job.position)
                                }}
                              >
-                               <Edit className="h-4 w-4 mr-1" />
-                               更新
+                               <Eye className="h-4 w-4 mr-1" />
+                               洞察
                         </Button>
 
                              <Dialog open={updatingJobId === job.id} onOpenChange={(open) => {
@@ -1994,7 +2023,7 @@ AI能力特写：
             >
               <Briefcase className="h-5 w-5 mr-3" />
               添加新职位
-            </Button>
+                            </Button>
             <Button 
               onClick={() => {
                 setIsAddOptionsOpen(false)
@@ -2098,7 +2127,7 @@ AI能力特写：
           <div className="flex-1 overflow-y-auto">
             <div className="space-y-6 py-4">
               {/* 输入区域 */}
-                              <div>
+              <div>
                 <Label htmlFor="aiJobText" className="text-gray-700 font-medium text-sm mb-3 block">
                   岗位信息文本（最大5000字符）
                 </Label>
@@ -2132,8 +2161,26 @@ AI能力特写：
                       </>
                     )}
                   </Button>
-                              </div>
-                            </div>
+                </div>
+              </div>
+
+              {/* 生成洞察选择 */}
+              <div className="bg-[#E0E9F0]/20 rounded-lg p-4 border border-[#E0E9F0]/30">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Checkbox
+                    id="generateInsightForAI"
+                    checked={generateInsight}
+                    onCheckedChange={(checked) => setGenerateInsight(checked as boolean)}
+                    className="border-[#B4C2CD] data-[state=checked]:bg-[#B4C2CD] data-[state=checked]:border-[#B4C2CD]"
+                  />
+                  <Label htmlFor="generateInsightForAI" className="text-gray-700 font-medium text-sm">
+                    自动生成公司和岗位洞察
+                  </Label>
+                </div>
+                <p className="text-sm text-gray-600">
+                  选择后，AI将自动分析公司和岗位信息，生成详细的洞察报告，帮助您更好地了解目标公司和岗位。
+                </p>
+              </div>
 
               {/* 解析结果预览 */}
               {parsedJobs.length > 0 && (
@@ -2255,6 +2302,108 @@ AI能力特写：
                 </DialogContent>
               </Dialog>
 
+      {/* 洞察对话框 */}
+      <Dialog open={insightsJobId !== null} onOpenChange={(open) => {
+        if (!open) {
+          setInsightsJobId(null)
+          setInsightsData(null)
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl overflow-hidden">
+          <DialogHeader className="px-6 py-4 border-b border-[#E0E9F0] flex-shrink-0">
+            <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
+              <Eye className="h-5 w-5 mr-2 text-[#B4C2CD]" />
+              公司洞察信息
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="px-6 py-4 space-y-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+            {isInsightsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B4C2CD]"></div>
+                <span className="ml-3 text-gray-600">正在获取洞察信息...</span>
+              </div>
+            ) : insightsData ? (
+              <>
+                {/* 公司简介 */}
+                {insightsData.companyData && (
+                  <div className="bg-[#E0E9F0]/20 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                      <Building2 className="h-5 w-5 mr-2 text-[#B4C2CD]" />
+                      公司简介
+                    </h3>
+                    <div className="prose prose-sm max-w-none">
+                      <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                        {insightsData.companyData.culture || '暂无公司简介信息'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 岗位洞察 */}
+                {insightsData.positionData && (
+                  <div className="bg-[#E0E9F0]/20 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                      <Briefcase className="h-5 w-5 mr-2 text-[#B4C2CD]" />
+                      岗位洞察
+                    </h3>
+                    <div className="space-y-4">
+                      {insightsData.positionData.interview_experience && (
+                        <div>
+                          <h4 className="font-medium text-gray-700 mb-2">面试经验</h4>
+                          <div className="bg-white/50 rounded-lg p-3 border border-[#E0E9F0]/30">
+                            <p className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
+                              {insightsData.positionData.interview_experience}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {insightsData.positionData.skill_requirements && (
+                        <div>
+                          <h4 className="font-medium text-gray-700 mb-2">技能要求</h4>
+                          <div className="bg-white/50 rounded-lg p-3 border border-[#E0E9F0]/30">
+                            <p className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
+                              {insightsData.positionData.skill_requirements}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {!insightsData.companyData && !insightsData.positionData && (
+                  <div className="text-center py-12 text-gray-500">
+                    <Eye className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p>暂无洞察信息</p>
+                    <p className="text-sm mt-2">AI正在为您生成公司和岗位的洞察信息...</p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-12 text-gray-500">
+                <Eye className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                <p>获取洞察信息失败</p>
+                <p className="text-sm mt-2">请稍后重试</p>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-end px-6 py-4 border-t border-[#E0E9F0] bg-white">
+            <Button 
+              onClick={() => {
+                setInsightsJobId(null)
+                setInsightsData(null)
+              }}
+              className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium"
+            >
+              关闭
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* 更新成功对话框 */}
       <Dialog open={isUpdateSuccessDialogOpen} onOpenChange={setIsUpdateSuccessDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -2288,18 +2437,18 @@ AI能力特写：
                     <div className="col-span-2">
                       <span className="font-medium text-gray-700">邮件操作：</span>
                       <span className="text-gray-900">{updateSuccessInfo.emailAction}</span>
-                    </div>
+                              </div>
                     {updateSuccessInfo.datetime && (
                       <div className="col-span-2">
                         <span className="font-medium text-gray-700">时间：</span>
                         <span className="text-gray-900">{new Date(updateSuccessInfo.datetime).toLocaleString('zh-CN')}</span>
-                      </div>
-                    )}
                             </div>
+                    )}
                           </div>
                         </div>
-            )}
                   </div>
+            )}
+            </div>
           <div className="flex justify-end">
             <Button 
               onClick={() => setIsUpdateSuccessDialogOpen(false)}
@@ -2317,9 +2466,9 @@ AI能力特写：
           <Button 
             variant="ghost" 
             className="flex flex-col items-center space-y-1 text-gray-600 hover:text-[#B4C2CD] transition-colors"
-            onClick={() => router.push("/insights")}
+            onClick={() => router.push("/")}
           >
-            <span className="text-sm">洞察</span>
+            <span className="text-sm">职位管理</span>
           </Button>
           <Button 
             variant="ghost" 
