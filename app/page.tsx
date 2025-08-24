@@ -21,7 +21,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Bell, Briefcase, Clock, MessageSquare, Mic, Plus, Users, Building2, Send, BarChart3, CheckCircle2, Circle, AlertCircle, Eye, Edit, ExternalLink, AlarmClock, Moon, Sun, TrendingUp, Calendar, Target, FileText, Settings, Search, LogOut, User, ChevronDown, Trash2, MapPin, DollarSign, X } from 'lucide-react'
+import { Bell, Briefcase, Clock, MessageSquare, Mic, Plus, Users, Building2, Send, BarChart3, CheckCircle2, Circle, AlertCircle, Eye, Edit, ExternalLink, AlarmClock, Moon, Sun, TrendingUp, Calendar, Target, FileText, Settings, Search, LogOut, User, ChevronDown, Trash2, MapPin, DollarSign, X, Sparkles } from 'lucide-react'
 import { DateTimePicker } from "@/components/ui/date-time-picker"
 import { useJobs, useReminders, useInsights } from "@/lib/hooks"
 import { Logo } from "@/components/ui/logo"
@@ -42,11 +42,89 @@ export default function JobSearchAssistant() {
   const [generateInsight, setGenerateInsight] = useState(true)
   const [isAddOptionsOpen, setIsAddOptionsOpen] = useState(false)
   const [isSearchJobOpen, setIsSearchJobOpen] = useState(false)
+  const [isAIJobParseOpen, setIsAIJobParseOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isJobListSearching, setIsJobListSearching] = useState(false)
   const [jobListSearchQuery, setJobListSearchQuery] = useState("")
   const [jobListSearchResults, setJobListSearchResults] = useState<any[]>([])
+  const [aiJobText, setAiJobText] = useState(`腾讯 产品经理（技术背景）
+https://join.qq.com/post_detail.html?postid=1149822276057976832
+岗位描述
+- 1、负责toB（或toG）平台产品的产品策划和运营工作，提供具有竞争力的产品方案，实现产品增长、商业化目标；
+2、关注行业生态、同类产品动向，结合产品优势制定行业合作和市场运营方案，提升行业影响力；
+3、持续关注云计算发展趋势，基于业界标杆和技术原理的分析，落地技术产品；
+4、构建业务数据监控体系、IT支持及客服体系、渠道和营销体系，持续改善系统架构、运营效率和成本，提升销售转化效率；
+5、进行业务调研和客户反馈收集，提炼通用需求并判断优先级，推进销售或客户的痛点问题持续解决。
+岗位要求
+- 1、计算机、软件、人工智能、大数据相关专业；
+2、热爱互联网、热爱技术；对产品策划有激情，热爱思考，具有优秀的逻辑思维和创新能力；
+3、有亲和力，擅于沟通，并有优秀的执行力来保障需求的落地；
+4、有服务意识 ，用心满足客户诉求，愿意深入了解客户的应用场景；
+5、善于面对挑战和质疑。
+加分项或注意事项
+- 有一定的编程能力者。
+参加面试的城市
+- 远程面试
+
+
+腾讯 产品经理
+https://join.qq.com/post_detail.html?postid=1149822272375377920
+- 岗位描述
+- 腾讯产品经理培训生项目，集中腾讯优势产品资源、培训资源和导师资源，打造未来产品经理领军人。项目聚焦AI领域，面向全球寻找最具潜力的AI产品人才。
+你将：
+1、参与核心AI战场的产品设计与功能优化，为亿万用户创造更前沿智能、科技驱动的便捷生活；
+2、推动大模型技术落地为产品解决方案，洞察用户对AI的真实诉求，持续提供高价值服务；
+3、开拓AI技术在多元业务场景下的融合与应用，探索产品创新路径，助力用户体验升级；
+4、跨产品开展前沿AI领域的专项实战，让创意构想在丰富的真实场景中照进现实。
+你可能在产品策划、产品运营、产品经理(技术背景)、行业应用等多元化产品岗位上，开启你的AI产品之路。下一次改变亿万用户生活的机遇，下一个记录在互联网历史中的AI时刻，等你创造！
+- 岗位要求
+- 1、本科及以上学历；
+2、怀揣着做出优秀互联网产品的梦想，拥有对AI行业和产品的极大热情；
+3、具备敏捷的洞察和思维能力，并且能把思考变为现实以不断满足用户和客户需求；
+4、拥有优秀的逻辑思维与系统分析能力、技术敏感度及商业敏感度。
+- 加分项或注意事项
+- 1、计算机或算法类专业背景、了解大模型技术可加分；
+2、拥有AI产品相关经历可加分。
+【特别提醒】
+欢迎在简历投递页面的"作品或个人主页"模块中上传你的个人作品或项目（包括不限于产品demo、用户体验报告、产品课题作业等形式，或是你在任意领域的代表作品），你所上传的个人作品或项目将会作为简历评估的重要参考！
+- 工作地点
+- 深圳总部 北京 上海 成都
+- 参加面试的城市
+- 远程面试
+
+算法工程师-视觉智能与视频编解码创新
+https://talent.dingtalk.com/campus/position-detail?lang=zh&positionId=199900420003
+更新于 2025-08-18
+技术类
+分享职位
+基础信息
+毕业起止时间要求：
+2025-06-01 ~ 2026-10-31
+招聘类型：
+技术类
+招聘批次：
+钉钉2026届秋季应届生招聘
+职位描述
+1. 当8K视频开始承载元宇宙的入口，当每帧画面都蕴含AI的智慧，阿里巴巴正引领全球视觉计算技术革命。我们为实时音视频频打造核心引擎，在视频会议、直播场景落地AI应用，用大模型重新定义视频语义理解——这不仅是技术突破，更是人机交互范式的颠覆。加入我们，你的算法将决定数十亿用户看见的世界
+职位描述：
+AI视觉大模型突破：构建多模态视频理解体系，攻关AIGC技术在企业协作场景的落地，包括但不限于音频驱动的视频数字人，AI Agent等
+图像与视频质量增强：研发基于AI的实时视频通信系统，在RTC场景实现压缩失真消除、动态超分、光流插帧等技术的工业级部署
+智能编码标准定义：优化AV1标准的落地开发，研发基于内容感知的编码算法、屏幕内容自适应算法
+感知计算架构创新：设计轻量化模型蒸馏方案，实现视频及图像等AI模型在移动端的部署；探索时空注意力机制在视频语义分割中的应用，构建低至30ms延时的在线处理流水线
+职位要求
+2. 计算机视觉/模式识别/多媒体系统等方向硕士及以上学历，具有一作顶会（CVPR/ICCV/ECCV/ICML）或专利发明经验者优先
+精通PyTorch/TensorRT/MNN，具备CUDA/OpenCL异构计算优化经验
+深入理解视频编码基本原理，熟悉AV1/VVC等最新编码标准
+AI能力特写：
+具备以下任一领域突破性成果：视频生成、神经网络压缩、多目标跟踪检测
+熟悉知识蒸馏、模型量化、模型剪枝、动态网络等边缘侧部署技术
+加分项✓ 在Kaggle/CVPR Video Competition等竞赛中进入Top5%✓ 发表过VBM/TVT/TMM等多媒体领域顶刊论文✓ 有WebRTC实时通信系统开发经验
+这里没有PPT考核，只有技术攻坚的生死时速。一段全新、有意思的旅程正待开启！为了更全面的展现你自己，你还可以在简历中附上你认为自己最有意思的爱好、特长、经历，或是对未来有意思的畅想，没有限制，此项非必填。加入我们，一起打开有意思的未来！
+工作地点
+杭州`)
+  const [parsedJobs, setParsedJobs] = useState<any[]>([])
+  const [isParsing, setIsParsing] = useState(false)
   const router = useRouter()
 
   // 检查登录状态 - 只在客户端检查
@@ -140,6 +218,107 @@ export default function JobSearchAssistant() {
       console.log('Dialog should close now')
     } else {
       console.log('Add job failed, result is null')
+    }
+  }
+
+  // AI解析岗位信息
+  const parseJobText = async () => {
+    if (!aiJobText.trim()) {
+      alert("请先输入岗位信息")
+      return
+    }
+    
+    setIsParsing(true)
+    try {
+      // 使用AI解析文本，提取岗位信息
+      const jobs = await parseJobTextWithAI(aiJobText)
+      setParsedJobs(jobs)
+    } catch (error) {
+      console.error('解析失败:', error)
+      alert("解析失败，请检查输入格式")
+    } finally {
+      setIsParsing(false)
+    }
+  }
+
+  // AI解析岗位信息的核心逻辑
+  const parseJobTextWithAI = async (text: string): Promise<any[]> => {
+    try {
+      const response = await fetch('/api/insights/parse-jobs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ jobText: text }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || '解析失败')
+      }
+
+      const data = await response.json()
+      
+      if (data.success && data.jobs) {
+        return data.jobs
+      } else {
+        throw new Error('AI解析返回的数据格式不正确')
+      }
+    } catch (error) {
+      console.error('AI解析岗位信息失败:', error)
+      throw error
+    }
+  }
+
+  // 批量添加解析后的岗位
+  const addParsedJobs = async () => {
+    if (parsedJobs.length === 0) {
+      alert("没有可添加的岗位")
+      return
+    }
+    
+    const userId = localStorage.getItem("user_id")
+    if (!userId) {
+      alert("用户未登录")
+      return
+    }
+    
+    let successCount = 0
+    let failCount = 0
+    
+    for (const job of parsedJobs) {
+      try {
+        const jobData = {
+          ...job,
+          user_id: parseInt(userId),
+          applied_date: new Date().toISOString().split("T")[0],
+          progress: 25,
+          next_action: "跟进",
+          next_action_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+          requirements: job.description, // 将岗位JD存储到requirements字段
+          url: job.url || "", // 确保URL字段被正确传递
+        }
+        
+        const result = await addJob(jobData, false) // 不自动生成洞察，避免重复
+        if (result) {
+          successCount++
+        } else {
+          failCount++
+        }
+      } catch (error) {
+        console.error('添加岗位失败:', error)
+        failCount++
+      }
+    }
+    
+    if (successCount > 0) {
+      alert(`成功添加 ${successCount} 个岗位${failCount > 0 ? `，失败 ${failCount} 个` : ''}`)
+      // 重置状态
+      setAiJobText("")
+      setParsedJobs([])
+      setIsAIJobParseOpen(false)
+    } else {
+      alert("添加失败，请重试")
     }
   }
 
@@ -1633,6 +1812,16 @@ export default function JobSearchAssistant() {
             <Button 
               onClick={() => {
                 setIsAddOptionsOpen(false)
+                setIsAIJobParseOpen(true)
+              }}
+              className="w-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
+            >
+              <Sparkles className="h-5 w-5 mr-3" />
+              AI解析岗位信息
+            </Button>
+            <Button 
+              onClick={() => {
+                setIsAddOptionsOpen(false)
                 setIsSearchJobOpen(true)
               }}
               className="w-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
@@ -1703,6 +1892,179 @@ export default function JobSearchAssistant() {
                 </div>
               )}
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI解析岗位信息对话框 */}
+      <Dialog open={isAIJobParseOpen} onOpenChange={setIsAIJobParseOpen}>
+        <DialogContent className="max-w-4xl w-[95vw] h-[90vh] bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
+              <Sparkles className="h-5 w-5 mr-2 text-[#B4C2CD]" />
+              AI解析岗位信息
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              粘贴岗位信息，AI将自动解析并提取关键信息
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto">
+            <div className="space-y-6 py-4">
+              {/* 输入区域 */}
+              <div>
+                <Label htmlFor="aiJobText" className="text-gray-700 font-medium text-sm mb-3 block">
+                  岗位信息文本（最大5000字符）
+                </Label>
+                <Textarea
+                  id="aiJobText"
+                  value={aiJobText}
+                  onChange={(e) => setAiJobText(e.target.value)}
+                  placeholder="请粘贴岗位信息文本，支持多个岗位信息..."
+                  rows={8}
+                  maxLength={5000}
+                  className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 placeholder-gray-500 resize-none"
+                />
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-sm text-gray-500">
+                    已输入 {aiJobText.length} / 5000 字符
+                  </span>
+                  <Button
+                    onClick={parseJobText}
+                    disabled={!aiJobText.trim() || isParsing}
+                    className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isParsing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700 mr-2"></div>
+                        解析中...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        开始解析
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* 解析结果预览 */}
+              {parsedJobs.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    解析结果预览 ({parsedJobs.length} 个岗位)
+                  </h3>
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {parsedJobs.map((job, index) => (
+                      <Card key={index} className="border-[#E0E9F0] bg-white/90 backdrop-blur-sm">
+                        <CardContent className="p-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-gray-700 font-medium text-sm">公司名称</Label>
+                              <Input
+                                value={job.company}
+                                onChange={(e) => {
+                                  const updatedJobs = [...parsedJobs]
+                                  updatedJobs[index].company = e.target.value
+                                  setParsedJobs(updatedJobs)
+                                }}
+                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-gray-700 font-medium text-sm">职位名称</Label>
+                              <Input
+                                value={job.position}
+                                onChange={(e) => {
+                                  const updatedJobs = [...parsedJobs]
+                                  updatedJobs[index].position = e.target.value
+                                  setParsedJobs(updatedJobs)
+                                }}
+                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-gray-700 font-medium text-sm">工作地点</Label>
+                              <Input
+                                value={job.location}
+                                onChange={(e) => {
+                                  const updatedJobs = [...parsedJobs]
+                                  updatedJobs[index].location = e.target.value
+                                  setParsedJobs(updatedJobs)
+                                }}
+                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-gray-700 font-medium text-sm">薪资待遇</Label>
+                              <Input
+                                value={job.salary}
+                                onChange={(e) => {
+                                  const updatedJobs = [...parsedJobs]
+                                  updatedJobs[index].salary = e.target.value
+                                  setParsedJobs(updatedJobs)
+                                }}
+                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              />
+                            </div>
+                            <div className="col-span-1 sm:col-span-2">
+                              <Label className="text-gray-700 font-medium text-sm">岗位描述</Label>
+                              <Textarea
+                                value={job.description}
+                                onChange={(e) => {
+                                  const updatedJobs = [...parsedJobs]
+                                  updatedJobs[index].description = e.target.value
+                                  setParsedJobs(updatedJobs)
+                                }}
+                                rows={3}
+                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
+                              />
+                            </div>
+                            <div className="col-span-1 sm:grid-cols-2">
+                              <Label className="text-gray-700 font-medium text-sm">岗位要求</Label>
+                              <Textarea
+                                value={job.requirements}
+                                onChange={(e) => {
+                                  const updatedJobs = [...parsedJobs]
+                                  updatedJobs[index].requirements = e.target.value
+                                  setParsedJobs(updatedJobs)
+                                }}
+                                rows={3}
+                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
+                              />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 底部操作按钮 */}
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-6 border-t border-[#E0E9F0] flex-shrink-0">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsAIJobParseOpen(false)
+                setAiJobText("")
+                setParsedJobs([])
+              }}
+              className="border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30 px-6 py-2"
+            >
+              取消
+            </Button>
+            {parsedJobs.length > 0 && (
+              <Button 
+                onClick={addParsedJobs}
+                className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                确认添加 ({parsedJobs.length} 个岗位)
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
