@@ -341,10 +341,7 @@ AI能力特写：
   const [updatingLocation, setUpdatingLocation] = useState<string>("")
   const [updatingSalary, setUpdatingSalary] = useState<string>("")
   
-  // 洞察相关状态
-  const [insightsJobId, setInsightsJobId] = useState<number | null>(null)
-  const [insightsData, setInsightsData] = useState<any>(null)
-  const [isInsightsLoading, setIsInsightsLoading] = useState(false)
+
 
   // 邮件解析相关函数
   const parseEmailWithAI = async (emailContent: string, emailSubject: string) => {
@@ -406,37 +403,7 @@ AI能力特写：
     setIsUpdateSuccessDialogOpen(true)
   }
 
-  // 获取职位洞察信息
-  const fetchJobInsights = async (company: string, position: string) => {
-    try {
-      setIsInsightsLoading(true)
-      
-      // 直接从数据库获取洞察数据
-      const companyDataResponse = await fetch(`/api/insights/company?company=${encodeURIComponent(company)}`)
-      const positionDataResponse = await fetch(`/api/insights/position?company=${encodeURIComponent(company)}&position=${encodeURIComponent(position)}`)
-      
-      let companyData = null
-      let positionData = null
-      
-      if (companyDataResponse.ok) {
-        companyData = await companyDataResponse.json()
-      }
-      
-      if (positionDataResponse.ok) {
-        positionData = await positionDataResponse.json()
-      }
-      
-      const data = { companyData, positionData }
-      setInsightsData(data)
-      return data
-    } catch (error) {
-      console.error('获取洞察信息失败:', error)
-      alert('获取洞察信息失败，请重试')
-      return null
-    } finally {
-      setIsInsightsLoading(false)
-    }
-  }
+
 
   const handleRefreshJobStatus = async () => {
     if (!emails || emails.length === 0) {
@@ -1317,9 +1284,8 @@ AI能力特写：
                              <Button 
                                size="sm" 
                                className="flex-1 bg-black hover:bg-gray-800 text-white border border-black"
-                               onClick={async () => {
-                                 setInsightsJobId(job.id)
-                                 await fetchJobInsights(job.company, job.position)
+                               onClick={() => {
+                                 router.push(`/insights/${encodeURIComponent(job.company)}/${encodeURIComponent(job.position)}`)
                                }}
                              >
                                <Eye className="h-4 w-4 mr-1" />
@@ -1651,9 +1617,8 @@ AI能力特写：
                              <Button 
                                size="sm" 
                                className="flex-1 bg-black hover:bg-gray-800 text-white border border-black"
-                               onClick={async () => {
-                                 setInsightsJobId(job.id)
-                                 await fetchJobInsights(job.company, job.position)
+                               onClick={() => {
+                                 router.push(`/insights/${encodeURIComponent(job.company)}/${encodeURIComponent(job.position)}`)
                                }}
                              >
                                <Eye className="h-4 w-4 mr-1" />
@@ -2302,107 +2267,7 @@ AI能力特写：
                 </DialogContent>
               </Dialog>
 
-      {/* 洞察对话框 */}
-      <Dialog open={insightsJobId !== null} onOpenChange={(open) => {
-        if (!open) {
-          setInsightsJobId(null)
-          setInsightsData(null)
-        }
-      }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl overflow-hidden">
-          <DialogHeader className="px-6 py-4 border-b border-[#E0E9F0] flex-shrink-0">
-            <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
-              <Eye className="h-5 w-5 mr-2 text-[#B4C2CD]" />
-              公司洞察信息
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="px-6 py-4 space-y-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-            {isInsightsLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B4C2CD]"></div>
-                <span className="ml-3 text-gray-600">正在获取洞察信息...</span>
-              </div>
-            ) : insightsData ? (
-              <>
-                {/* 公司简介 */}
-                {insightsData.companyData && (
-                  <div className="bg-[#E0E9F0]/20 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                      <Building2 className="h-5 w-5 mr-2 text-[#B4C2CD]" />
-                      公司简介
-                    </h3>
-                    <div className="prose prose-sm max-w-none">
-                      <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                        {insightsData.companyData.culture || '暂无公司简介信息'}
-                      </div>
-                    </div>
-                  </div>
-                )}
 
-                {/* 岗位洞察 */}
-                {insightsData.positionData && (
-                  <div className="bg-[#E0E9F0]/20 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                      <Briefcase className="h-5 w-5 mr-2 text-[#B4C2CD]" />
-                      岗位洞察
-                    </h3>
-                    <div className="space-y-4">
-                      {insightsData.positionData.interview_experience && (
-                        <div>
-                          <h4 className="font-medium text-gray-700 mb-2">面试经验</h4>
-                          <div className="bg-white/50 rounded-lg p-3 border border-[#E0E9F0]/30">
-                            <p className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
-                              {insightsData.positionData.interview_experience}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {insightsData.positionData.skill_requirements && (
-                        <div>
-                          <h4 className="font-medium text-gray-700 mb-2">技能要求</h4>
-                          <div className="bg-white/50 rounded-lg p-3 border border-[#E0E9F0]/30">
-                            <p className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
-                              {insightsData.positionData.skill_requirements}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {!insightsData.companyData && !insightsData.positionData && (
-                  <div className="text-center py-12 text-gray-500">
-                    <Eye className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <p>暂无洞察信息</p>
-                    <p className="text-sm mt-2">AI正在为您生成公司和岗位的洞察信息...</p>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-center py-12 text-gray-500">
-                <Eye className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                <p>获取洞察信息失败</p>
-                <p className="text-sm mt-2">请稍后重试</p>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex justify-end px-6 py-4 border-t border-[#E0E9F0] bg-white">
-            <Button 
-              onClick={() => {
-                setInsightsJobId(null)
-                setInsightsData(null)
-              }}
-              className="bg-black hover:bg-gray-800 text-white font-medium"
-            >
-              关闭
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* 更新成功对话框 */}
       <Dialog open={isUpdateSuccessDialogOpen} onOpenChange={setIsUpdateSuccessDialogOpen}>
