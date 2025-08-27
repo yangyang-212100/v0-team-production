@@ -947,9 +947,9 @@ AI能力特写：
                          }}
                        >
                          {date.getDate()}
-                                                  {hasActiveTask && (
-                            <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-[#B4C2CD] rounded-full border-2 border-white shadow-sm"></div>
-                          )}
+                                                                          {hasActiveTask && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-gradient-to-r from-[#4285f4] to-[#2a97f3] rounded-full border-2 border-white shadow-sm"></div>
+                        )}
                          </div>
                                                {/* 当前日期的指向箭头 */}
                          {isToday && (
@@ -972,7 +972,7 @@ AI能力特写：
                              </h3>
                              <Button
                                onClick={handleRefreshJobStatus}
-                               className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-3 py-1 text-sm shadow-sm hover:shadow-md transition-all duration-200 !opacity-100 !important"
+                               className="bg-gradient-to-r from-[#4285f4] to-[#2a97f3] hover:from-[#2a97f3] hover:to-[#4285f4] text-white font-medium px-3 py-1 text-sm shadow-sm hover:shadow-md transition-all duration-200 !opacity-100 !important"
                                style={{ opacity: '1 !important' }}
                              >
                                {isEmailUpdating ? (
@@ -1199,7 +1199,7 @@ AI能力特写：
                            <div className="flex space-x-2 mt-4">
               <Dialog>
                 <DialogTrigger asChild>
-                                 <Button variant="outline" size="sm" className="flex-1">
+                                 <Button variant="outline" size="sm" className="flex-1 bg-white text-black border-black hover:bg-gray-50">
                                    <Eye className="h-4 w-4 mr-1" />
                                    详情
                                  </Button>
@@ -1316,7 +1316,7 @@ AI能力特写：
 
                              <Button 
                                size="sm" 
-                               className="flex-1 bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 border border-[#B4C2CD]"
+                               className="flex-1 bg-black hover:bg-gray-800 text-white border border-black"
                                onClick={async () => {
                                  setInsightsJobId(job.id)
                                  await fetchJobInsights(job.company, job.position)
@@ -1446,7 +1446,7 @@ AI能力特写：
                                    <Button 
                                      onClick={() => handleUpdateJobStatus(job.id, updatingStatus)}
                                      disabled={!updatingStatus}
-                                     className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 disabled:opacity-50 px-6 py-2"
+                                     className="bg-black hover:bg-gray-800 text-white disabled:opacity-50 px-6 py-2"
                                    >
                                      确认更新
                                    </Button>
@@ -1457,7 +1457,7 @@ AI能力特写：
                              <Button 
                                variant="outline" 
                                size="sm" 
-                               className="flex-1 border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30"
+                               className="flex-1 bg-white text-black border-black hover:bg-gray-50"
                                onClick={() => handleDeleteJob(job.id)}
                              >
                                <Trash2 className="h-4 w-4 mr-1" />
@@ -1533,7 +1533,7 @@ AI能力特写：
                            <div className="flex space-x-2 mt-4">
                              <Dialog>
                                <DialogTrigger asChild>
-                                 <Button variant="outline" size="sm" className="flex-1">
+                                 <Button variant="outline" size="sm" className="flex-1 bg-white text-black border-black hover:bg-gray-50">
                                    <Eye className="h-4 w-4 mr-1" />
                                    详情
                                  </Button>
@@ -1650,7 +1650,7 @@ AI能力特写：
 
                              <Button 
                                size="sm" 
-                               className="flex-1 bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 border border-[#B4C2CD]"
+                               className="flex-1 bg-black hover:bg-gray-800 text-white border border-black"
                                onClick={async () => {
                                  setInsightsJobId(job.id)
                                  await fetchJobInsights(job.company, job.position)
@@ -1780,7 +1780,7 @@ AI能力特写：
                                    <Button 
                                      onClick={() => handleUpdateJobStatus(job.id, updatingStatus)}
                                      disabled={!updatingStatus}
-                                     className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 disabled:opacity-50 px-6 py-2"
+                                     className="bg-black hover:bg-gray-800 text-white disabled:opacity-50 px-6 py-2"
                                    >
                                      确认更新
                                    </Button>
@@ -1791,7 +1791,7 @@ AI能力特写：
                              <Button 
                                variant="outline" 
                                size="sm" 
-                               className="flex-1 border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30"
+                               className="flex-1 bg-white text-black border-black hover:bg-gray-50"
                                onClick={() => handleDeleteJob(job.id)}
                              >
                                <Trash2 className="h-4 w-4 mr-1" />
@@ -1916,12 +1916,12 @@ AI能力特写：
                  >
                       取消
                     </Button>
-                 <Button 
+                                  <Button 
                    onClick={addNewJob}
-                   className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200"
+                   className="bg-black hover:bg-gray-800 text-white font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200"
                  >
-                      添加申请
-                    </Button>
+                   添加申请
+                 </Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -1948,7 +1948,7 @@ AI能力特写：
                     </Button>
                 <Button 
                   onClick={handleLogoutConfirm}
-                  className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700"
+                  className="bg-black hover:bg-gray-800 text-white"
                 >
                   确认退出
                     </Button>
@@ -2019,7 +2019,7 @@ AI能力特写：
                 setIsAddOptionsOpen(false)
                 setIsAddJobOpen(true)
               }}
-              className="w-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
+              className="w-full bg-black hover:bg-gray-800 text-white h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
             >
               <Briefcase className="h-5 w-5 mr-3" />
               添加新职位
@@ -2029,7 +2029,7 @@ AI能力特写：
                 setIsAddOptionsOpen(false)
                 setIsAIJobParseOpen(true)
               }}
-              className="w-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
+              className="w-full bg-black hover:bg-gray-800 text-white h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
             >
               <Sparkles className="h-5 w-5 mr-3" />
               AI解析职位
@@ -2039,7 +2039,7 @@ AI能力特写：
                 setIsAddOptionsOpen(false)
                 setIsSearchJobOpen(true)
               }}
-              className="w-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
+              className="w-full bg-black hover:bg-gray-800 text-white h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
             >
               <Bell className="h-5 w-5 mr-3" />
               添加新提醒
@@ -2086,7 +2086,7 @@ AI能力特写：
                                 </div>
                         <Button
                           onClick={() => handleSelectJobForUpdate(job)}
-                          className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium shadow-sm hover:shadow-md transition-all duration-200"
+                          className="bg-black hover:bg-gray-800 text-white font-medium shadow-sm hover:shadow-md transition-all duration-200"
                         >
                           选择
                         </Button>
@@ -2147,7 +2147,7 @@ AI能力特写：
                   <Button
                     onClick={parseJobText}
                     disabled={!aiJobText.trim() || isParsing}
-                    className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-black hover:bg-gray-800 text-white font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isParsing ? (
                       <>
@@ -2171,7 +2171,7 @@ AI能力特写：
                     id="generateInsightForAI"
                     checked={generateInsight}
                     onCheckedChange={(checked) => setGenerateInsight(checked as boolean)}
-                    className="border-[#B4C2CD] data-[state=checked]:bg-[#B4C2CD] data-[state=checked]:border-[#B4C2CD]"
+                    className="border-[#B4C2CD] data-[state=checked]:bg-black data-[state=checked]:border-black data-[state=checked]:text-white"
                   />
                   <Label htmlFor="generateInsightForAI" className="text-gray-700 font-medium text-sm">
                     自动生成公司和岗位洞察
@@ -2286,14 +2286,14 @@ AI能力特写：
                 setAiJobText("")
                 setParsedJobs([])
               }}
-              className="border-[#B4C2CD] text-gray-700 hover:bg-[#E0E9F0]/30 px-6 py-2"
+              className="bg-white text-black border-black hover:bg-gray-50 px-6 py-2"
             >
                       取消
                     </Button>
             {parsedJobs.length > 0 && (
               <Button 
                 onClick={addParsedJobs}
-                className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200"
+                className="bg-black hover:bg-gray-800 text-white font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200"
               >
                 确认添加 ({parsedJobs.length} 个岗位)
                     </Button>
@@ -2396,7 +2396,7 @@ AI能力特写：
                 setInsightsJobId(null)
                 setInsightsData(null)
               }}
-              className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium"
+              className="bg-black hover:bg-gray-800 text-white font-medium"
             >
               关闭
             </Button>
@@ -2452,7 +2452,7 @@ AI能力特写：
           <div className="flex justify-end">
             <Button 
               onClick={() => setIsUpdateSuccessDialogOpen(false)}
-              className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 font-medium"
+              className="bg-black hover:bg-gray-800 text-white font-medium"
             >
               确定
             </Button>
@@ -2473,7 +2473,7 @@ AI能力特写：
           <Button 
             variant="ghost" 
             size="icon"
-            className="w-12 h-12 rounded-full bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] text-gray-700 hover:from-[#B4C2CD] hover:to-[#E0E9F0] shadow-lg transition-all duration-200"
+            className="w-12 h-12 rounded-full bg-gradient-to-r from-[#4285f4] to-[#2a97f3] text-white hover:from-[#2a97f3] hover:to-[#4285f4] shadow-lg transition-all duration-200"
             onClick={() => setIsAddOptionsOpen(true)}
           >
             <Plus className="h-6 w-6" />

@@ -78,7 +78,7 @@ export default function OfferPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F8FA] relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#d6e5fd] via-[#d6e5fd] to-[#f7f7f7] relative overflow-hidden">
       {/* 背景装饰 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#E0E9F0]/30 rounded-full blur-xl"></div>
@@ -143,12 +143,12 @@ export default function OfferPage() {
               <p className="text-gray-600 mb-6">
                 当您的职位申请进度达到100%时，将在这里显示
               </p>
-              <Button 
-                onClick={() => router.push("/")}
-                className="bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] hover:from-[#B4C2CD] hover:to-[#E0E9F0] text-gray-700 rounded-xl"
-              >
-                去申请职位
-              </Button>
+                             <Button 
+                 onClick={() => router.push("/")}
+                 className="bg-black hover:bg-gray-800 text-white rounded-xl"
+               >
+                 去申请职位
+               </Button>
             </div>
           </div>
         ) : (
