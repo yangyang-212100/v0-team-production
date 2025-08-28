@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   username VARCHAR(50) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
+  qq_auth_code VARCHAR(255),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -83,6 +84,34 @@ CREATE TABLE IF NOT EXISTS position_insights (
   UNIQUE(company_name, position)
 );
 
+-- 添加用户邮箱字段
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS qq_email VARCHAR(255);  -- 专门存储QQ邮箱
+
+-- 创建邮件表（与用户表关联）
+CREATE TABLE IF NOT EXISTS emails (
+    id BIGSERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),  -- 关联到用户表
+    email_id VARCHAR(255) NOT NULL,
+    subject TEXT NOT NULL,
+    sender TEXT NOT NULL,
+    date VARCHAR(255),
+    parsed_date TIMESTAMP WITH TIME ZONE,
+    body TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    source VARCHAR(50) DEFAULT 'qq_mail',
+    keywords_matched TEXT[],
+    
+    -- 添加约束和索引
+    UNIQUE(email_id, source, user_id),  -- 同一用户下邮件不重复
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_emails_user_id ON emails(user_id);
+CREATE INDEX IF NOT EXISTS idx_emails_parsed_date ON emails(parsed_date);
+CREATE INDEX IF NOT EXISTS idx_emails_created_at ON emails(created_at);
+
 -- 首先插入用户数据
 INSERT INTO users (id, username, password_hash) VALUES
 (1, 'demo_user', 'ZGVtb191c2Vy') -- base64编码的 'demo_user'
@@ -114,6 +143,7 @@ ALTER TABLE reminders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE insights ENABLE ROW LEVEL SECURITY;
 ALTER TABLE company_data ENABLE ROW LEVEL SECURITY;
 ALTER TABLE position_insights ENABLE ROW LEVEL SECURITY;
+ALTER TABLE emails ENABLE ROW LEVEL SECURITY;
 
 -- 创建 RLS 策略
 -- users 表策略
@@ -140,10 +170,15 @@ CREATE POLICY "Users can view all company data" ON company_data
 CREATE POLICY "Users can view all position insights" ON position_insights
   FOR SELECT USING (true);
 
+-- emails 表策略
+CREATE POLICY "Users can view and manage their own emails" ON emails
+  FOR ALL USING (user_id = (SELECT id FROM users WHERE username = current_user) OR user_id IS NULL);
+
 -- 允许 anon 和 authenticated 角色访问
 GRANT ALL ON users TO anon, authenticated;
 GRANT ALL ON jobs TO anon, authenticated;
 GRANT ALL ON reminders TO anon, authenticated;
 GRANT ALL ON insights TO anon, authenticated;
 GRANT ALL ON company_data TO anon, authenticated;
-GRANT ALL ON position_insights TO anon, authenticated; 
+GRANT ALL ON position_insights TO anon, authenticated;
+GRANT ALL ON emails TO anon, authenticated; 

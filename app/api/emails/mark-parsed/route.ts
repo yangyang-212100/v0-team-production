@@ -15,7 +15,9 @@ export async function POST(request: NextRequest) {
     // 更新邮件的parsed_date字段
     const { error } = await supabase
       .from('emails')
-      .update({ parsed_date: parsedDate })
+      .update({ 
+        parsed_date: parsedDate
+      })
       .eq('id', emailId)
 
     if (error) {

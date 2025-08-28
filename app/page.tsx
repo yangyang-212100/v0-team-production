@@ -43,6 +43,10 @@ export default function JobSearchAssistant() {
   const [isAddOptionsOpen, setIsAddOptionsOpen] = useState(false)
   const [isSearchJobOpen, setIsSearchJobOpen] = useState(false)
   const [isAIJobParseOpen, setIsAIJobParseOpen] = useState(false)
+  const [isEmailAuthOpen, setIsEmailAuthOpen] = useState(false)
+  const [emailAuthCode, setEmailAuthCode] = useState("")
+  const [isEmailAuthLoading, setIsEmailAuthLoading] = useState(false)
+  const [hasEmailAuthCode, setHasEmailAuthCode] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isJobListSearching, setIsJobListSearching] = useState(false)
@@ -186,6 +190,11 @@ AI能力特写：
   const { reminders, loading: remindersLoading, error: remindersError, addReminder, toggleReminder } = useReminders()
   const { insights, loading: insightsLoading, error: insightsError } = useInsights()
   const { emails, loading: emailsLoading, error: emailsError, fetchEmails } = useEmails()
+
+  // 页面加载时检查授权码状态
+  useEffect(() => {
+    checkEmailAuthCode()
+  }, [])
 
   const handleToggleReminder = async (id: number, completed: boolean) => {
     await toggleReminder(id, completed)
@@ -343,6 +352,90 @@ AI能力特写：
   
 
 
+  // 检查用户是否有邮箱授权码
+  const checkEmailAuthCode = async () => {
+    const userId = localStorage.getItem("user_id")
+    if (!userId) {
+      return false
+    }
+
+    try {
+      const response = await fetch(`/api/user/auth-code-status?userId=${userId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setHasEmailAuthCode(data.hasAuthCode)
+        return data.hasAuthCode
+      }
+    } catch (error) {
+      console.error('检查授权码状态失败:', error)
+    }
+    return false
+  }
+
+  // 邮箱授权码相关函数
+  const handleEmailAuth = async () => {
+    if (!emailAuthCode.trim()) {
+      alert("请输入邮箱授权码")
+      return
+    }
+
+    setIsEmailAuthLoading(true)
+    try {
+      const userId = localStorage.getItem("user_id")
+      if (!userId) {
+        alert("用户未登录")
+        return
+      }
+
+      const response = await fetch('/api/user/update-auth-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          userId: parseInt(userId),
+          authCode: emailAuthCode 
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || '保存授权码失败')
+      }
+
+      alert("邮箱授权码保存成功！现在可以使用邮件解析功能了。")
+      setIsEmailAuthOpen(false)
+      setEmailAuthCode("")
+      
+      // 更新授权码状态
+      await checkEmailAuthCode()
+      
+      // 关闭添加选项对话框，打开邮件解析功能
+      setIsAddOptionsOpen(false)
+      setIsEmailParseOpen(true)
+      
+    } catch (error) {
+      console.error('保存授权码失败:', error)
+      alert('保存授权码失败，请重试')
+    } finally {
+      setIsEmailAuthLoading(false)
+    }
+  }
+
+
+
+  // 邮件解析功能入口
+  const handleEmailParseClick = async () => {
+    const hasAuth = await checkEmailAuthCode()
+    if (!hasAuth) {
+      // 如果没有授权码，打开授权码输入对话框
+      setIsEmailAuthOpen(true)
+    } else {
+      // 如果有授权码，直接打开邮件解析功能
+      setIsEmailParseOpen(true)
+    }
+  }
+
   // 邮件解析相关函数
   const parseEmailWithAI = async (emailContent: string, emailSubject: string) => {
     try {
@@ -368,6 +461,12 @@ AI能力特写：
   }
 
   const handleParseEmail = async (email: any) => {
+    // 检查邮件是否已经解析过
+    if (email.parsed_date) {
+      alert('该邮件已经解析过了')
+      return
+    }
+    
     setSelectedEmail(email)
     setIsEmailParsing(true)
     
@@ -411,12 +510,20 @@ AI能力特写：
       return
     }
 
+    // 过滤出未解析的邮件
+    const unparsedEmails = emails.filter(email => !email.parsed_date)
+    
+    if (unparsedEmails.length === 0) {
+      alert('所有邮件都已经解析过了')
+      return
+    }
+
     setIsEmailUpdating(true)
     let updatedCount = 0
     let errorCount = 0
 
-    // 解析所有邮件，不管是否已经解析过
-    for (const email of emails) {
+    // 只解析未解析的邮件
+    for (const email of unparsedEmails) {
       try {
         const result = await parseEmailWithAI(email.body, email.subject)
         
@@ -1048,6 +1155,99 @@ AI能力特写：
                           </div>
                     </div>
                           </div>
+
+                 {/* 邮件解析功能区域 */}
+                 <div className="bg-[#F8FAFC]/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-[#E0E9F0] relative z-10">
+                   <div className="flex items-center justify-between mb-4">
+                     <h2 className="text-xl font-bold text-gray-800 flex items-center">
+                       <MessageSquare className="h-5 w-5 mr-2 text-[#B4C2CD]" />
+                       邮件解析功能
+                     </h2>
+                     <div className="flex items-center space-x-2">
+                       <Button
+                         onClick={handleEmailParseClick}
+                         className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-4 py-2 text-sm shadow-sm hover:shadow-md transition-all duration-200"
+                       >
+                         <MessageSquare className="h-4 w-4 mr-2" />
+                         邮件解析
+                       </Button>
+                       <Button
+                         onClick={handleRefreshJobStatus}
+                         disabled={isEmailUpdating}
+                         className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium px-4 py-2 text-sm shadow-sm hover:shadow-md transition-all duration-200"
+                       >
+                         {isEmailUpdating ? (
+                           <div className="flex items-center space-x-2">
+                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                             <span>更新中...</span>
+                           </div>
+                         ) : (
+                           <div className="flex items-center space-x-2">
+                             <TrendingUp className="h-4 w-4" />
+                             <span>批量更新</span>
+                           </div>
+                         )}
+                       </Button>
+
+                     </div>
+                   </div>
+                   
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                       <CardContent className="p-4">
+                         <div className="flex items-center space-x-2 mb-2">
+                           <MessageSquare className="h-5 w-5 text-blue-600" />
+                           <h3 className="font-semibold text-blue-800">邮件状态</h3>
+                         </div>
+                         <p className="text-blue-700 text-sm">
+                           {emailsLoading ? "加载中..." : 
+                             emails && emails.length > 0 
+                               ? `共 ${emails.length} 封邮件` 
+                               : "暂无邮件"}
+                         </p>
+                       </CardContent>
+                     </Card>
+                     
+                     <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                       <CardContent className="p-4">
+                         <div className="flex items-center space-x-2 mb-2">
+                           <CheckCircle2 className="h-5 w-5 text-green-600" />
+                           <h3 className="font-semibold text-green-800">已解析</h3>
+                         </div>
+                         <p className="text-green-700 text-sm">
+                           {emails && emails.length > 0 
+                             ? `${emails.filter(e => e.parsed_date).length} 封已解析` 
+                             : "0 封已解析"}
+                         </p>
+                       </CardContent>
+                     </Card>
+                     
+                     <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+                       <CardContent className="p-4">
+                         <div className="flex items-center space-x-2 mb-2">
+                           <AlertCircle className="h-5 w-5 text-orange-600" />
+                           <h3 className="font-semibold text-orange-800">待解析</h3>
+                         </div>
+                         <p className="text-orange-700 text-sm">
+                           {emails && emails.length > 0 
+                             ? `${emails.filter(e => !e.parsed_date).length} 封待解析` 
+                             : "0 封待解析"}
+                         </p>
+                       </CardContent>
+                     </Card>
+                   </div>
+                   
+                   {!hasEmailAuthCode && (
+                     <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                       <div className="flex items-center space-x-2">
+                         <AlertCircle className="h-5 w-5 text-yellow-600" />
+                         <p className="text-yellow-800 text-sm">
+                           请先设置QQ邮箱授权码以启用邮件解析功能
+                         </p>
+                       </div>
+                     </div>
+                   )}
+                 </div>
 
                  {/* 职位信息区域 */}
          <div className="bg-[#F8FAFC]/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-[#E0E9F0] relative z-10">
@@ -1885,8 +2085,8 @@ AI能力特写：
                    onClick={addNewJob}
                    className="bg-black hover:bg-gray-800 text-white font-medium px-6 py-2 shadow-sm hover:shadow-md transition-all duration-200"
                  >
-                   添加申请
-                 </Button>
+                      添加申请
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -2009,6 +2209,204 @@ AI能力特写：
               <Bell className="h-5 w-5 mr-3" />
               添加新提醒
             </Button>
+
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 邮箱授权码输入对话框 */}
+      <Dialog open={isEmailAuthOpen} onOpenChange={setIsEmailAuthOpen}>
+        <DialogContent className="max-w-md bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl">
+                            <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
+              <MessageSquare className="h-5 w-5 mr-2 text-[#B4C2CD]" />
+              邮箱授权码设置
+                              </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              请输入您的QQ邮箱授权码以启用邮件解析功能
+            </DialogDescription>
+                            </DialogHeader>
+          <div className="py-6 space-y-6">
+                                <div>
+              <Label htmlFor="emailAuthCode" className="text-gray-700 font-medium text-sm mb-3 block">
+                QQ邮箱授权码
+              </Label>
+              <Input
+                id="emailAuthCode"
+                type="password"
+                value={emailAuthCode}
+                onChange={(e) => setEmailAuthCode(e.target.value)}
+                placeholder="请输入QQ邮箱授权码"
+                className="border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-12 text-gray-700 placeholder-gray-500"
+                autoComplete="off"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                授权码获取方法：登录QQ邮箱 → 设置 → 账户 → 开启SMTP服务 → 生成授权码
+              </p>
+                                </div>
+            <div className="flex space-x-3">
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  setIsEmailAuthOpen(false)
+                  setEmailAuthCode("")
+                }}
+                className="flex-1 bg-white text-black border-black hover:bg-gray-50"
+              >
+                取消
+              </Button>
+              <Button 
+                onClick={handleEmailAuth}
+                disabled={isEmailAuthLoading || !emailAuthCode.trim()}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+              >
+                {isEmailAuthLoading ? "保存中..." : "保存授权码"}
+              </Button>
+                                </div>
+                                </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* 邮件解析对话框 */}
+      <Dialog open={isEmailParseOpen} onOpenChange={setIsEmailParseOpen}>
+        <DialogContent className="max-w-4xl w-[95vw] h-[90vh] bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
+              <MessageSquare className="h-5 w-5 mr-2 text-[#B4C2CD]" />
+              邮件解析功能
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
+              解析邮件内容，自动更新职位状态
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto">
+            <div className="space-y-6 py-4">
+              {/* 邮件列表 */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">邮件列表</h3>
+                  <div className="flex space-x-2">
+                    <Button
+                      onClick={fetchEmails}
+                      disabled={emailsLoading}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {emailsLoading ? "加载中..." : "刷新邮件"}
+                    </Button>
+                    <Button
+                      onClick={handleRefreshJobStatus}
+                      disabled={isEmailUpdating}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      {isEmailUpdating ? "更新中..." : "批量更新状态"}
+                    </Button>
+                  </div>
+                </div>
+                
+                {emailsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="text-gray-600 mt-2">加载邮件中...</p>
+                  </div>
+                ) : emails && emails.length > 0 ? (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {emails.map((email) => (
+                      <Card key={email.id} className="hover:shadow-lg transition-all duration-200 border-[#E0E9F0] bg-white/90 backdrop-blur-sm">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between">
+                                                         <div className="flex-1">
+                               <h4 className="font-semibold text-gray-800 text-sm mb-1">{email.subject}</h4>
+                               <p className="text-gray-600 text-xs mb-2">发件人: {email.sender}</p>
+                               <p className="text-gray-500 text-xs">时间: {new Date(email.date).toLocaleString('zh-CN')}</p>
+                                                                <div className="flex items-center space-x-2 mt-1">
+                                   {email.parsed_date ? (
+                                     <Badge className="bg-green-100 text-green-800 text-xs">
+                                       已解析
+                                     </Badge>
+                                   ) : (
+                                     <Badge className="bg-orange-100 text-orange-800 text-xs">
+                                       未解析
+                                     </Badge>
+                                   )}
+                                   {email.parsed_date && (
+                                     <span className="text-xs text-gray-500">
+                                       解析时间: {new Date(email.parsed_date).toLocaleString('zh-CN')}
+                                     </span>
+                                   )}
+                                 </div>
+                               </div>
+                               <Button
+                                 onClick={() => handleParseEmail(email)}
+                                 disabled={isEmailParsing || !!email.parsed_date}
+                                 size="sm"
+                                 className={`${
+                                   email.parsed_date 
+                                     ? "bg-gray-400 text-gray-600 cursor-not-allowed" 
+                                     : "bg-blue-600 hover:bg-blue-700 text-white"
+                                 }`}
+                               >
+                                 {isEmailParsing ? "解析中..." : email.parsed_date ? "已解析" : "解析"}
+                             </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                    <p className="text-lg font-medium">暂无邮件</p>
+                    <p className="text-sm text-gray-400 mt-1">请确保已正确配置邮箱授权码</p>
+                  </div>
+                )}
+              </div>
+
+              {/* 解析结果 */}
+              {parsedEmailResult && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">解析结果</h3>
+                  <Card className="border-[#E0E9F0] bg-white/90 backdrop-blur-sm">
+                    <CardContent className="p-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-700">公司：</span>
+                          <span className="text-gray-900">{parsedEmailResult.company}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">职位：</span>
+                          <span className="text-gray-900">{parsedEmailResult.position}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">操作：</span>
+                          <span className="text-gray-900">{parsedEmailResult.action}</span>
+                        </div>
+                        {parsedEmailResult.datetime && (
+                          <div>
+                            <span className="font-medium text-gray-700">时间：</span>
+                            <span className="text-gray-900">{new Date(parsedEmailResult.datetime).toLocaleString('zh-CN')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 底部操作按钮 */}
+          <div className="flex justify-end space-x-3 pt-6 border-t border-[#E0E9F0] flex-shrink-0">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsEmailParseOpen(false)
+                setParsedEmailResult(null)
+              }}
+              className="bg-white text-black border-black hover:bg-gray-50"
+            >
+              关闭
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -2048,14 +2446,14 @@ AI能力特写：
                           <h3 className="font-semibold text-gray-800 text-lg">{job.company}</h3>
                           <p className="text-gray-600 text-base">{job.position}</p>
                           <p className="text-sm text-gray-500 mt-1">当前状态: {job.status}</p>
-                                </div>
+                              </div>
                         <Button
                           onClick={() => handleSelectJobForUpdate(job)}
                           className="bg-black hover:bg-gray-800 text-white font-medium shadow-sm hover:shadow-md transition-all duration-200"
                         >
                           选择
                         </Button>
-                                </div>
+                              </div>
                     </CardContent>
                   </Card>
                 ))
@@ -2092,7 +2490,7 @@ AI能力特写：
           <div className="flex-1 overflow-y-auto">
             <div className="space-y-6 py-4">
               {/* 输入区域 */}
-              <div>
+                              <div>
                 <Label htmlFor="aiJobText" className="text-gray-700 font-medium text-sm mb-3 block">
                   岗位信息文本（最大5000字符）
                 </Label>
@@ -2126,8 +2524,8 @@ AI能力特写：
                       </>
                     )}
                   </Button>
-                </div>
-              </div>
+                              </div>
+                            </div>
 
               {/* 生成洞察选择 */}
               <div className="bg-[#E0E9F0]/20 rounded-lg p-4 border border-[#E0E9F0]/30">
@@ -2141,11 +2539,11 @@ AI能力特写：
                   <Label htmlFor="generateInsightForAI" className="text-gray-700 font-medium text-sm">
                     自动生成公司和岗位洞察
                   </Label>
-                </div>
+                      </div>
                 <p className="text-sm text-gray-600">
                   选择后，AI将自动分析公司和岗位信息，生成详细的洞察报告，帮助您更好地了解目标公司和岗位。
                 </p>
-              </div>
+                    </div>
 
               {/* 解析结果预览 */}
               {parsedJobs.length > 0 && (
