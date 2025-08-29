@@ -249,11 +249,29 @@ AI能力特写：
       return
     }
     
+    // 检查用户是否已登录
+    const userId = localStorage.getItem("user_id")
+    if (!userId) {
+      alert("请先登录后再添加职位")
+      setIsAIJobParseOpen(false)
+      return
+    }
+    
     setIsParsing(true)
     try {
       // 使用AI解析文本，提取岗位信息
       const jobs = await parseJobTextWithAI(aiJobText)
-      setParsedJobs(jobs)
+      
+      // 为每个解析的职位自动填充默认信息
+      const jobsWithDefaults = jobs.map(job => ({
+        ...job,
+        status: "已投递",
+        applied_date: new Date().toISOString().split('T')[0], // 当前日期
+        progress: 25, // 初始进度25%
+        type: "全职"
+      }))
+      
+      setParsedJobs(jobsWithDefaults)
     } catch (error) {
       console.error('解析失败:', error)
       alert("解析失败，请检查输入格式")
@@ -298,11 +316,23 @@ AI能力特写：
       return
     }
     
-    const userId = localStorage.getItem("user_id")
-    if (!userId) {
-      alert("用户未登录")
+    // 验证必填字段
+    const invalidJobs = parsedJobs.filter(job => !job.company?.trim() || !job.position?.trim())
+    if (invalidJobs.length > 0) {
+      alert("请确保所有岗位的公司名称和职位名称都已填写")
       return
     }
+    
+    // 检查用户是否已登录
+    const userId = localStorage.getItem("user_id")
+    if (!userId) {
+      alert("请先登录后再添加职位")
+      setIsAIJobParseOpen(false)
+      return
+    }
+    
+    // 点击确认后立即关闭对话框
+    setIsAIJobParseOpen(false)
     
     let successCount = 0
     let failCount = 0
@@ -312,16 +342,16 @@ AI能力特写：
         const jobData = {
           ...job,
           user_id: parseInt(userId),
-          applied_date: new Date().toISOString().split("T")[0],
-          progress: 25,
+          applied_date: job.applied_date || new Date().toISOString().split("T")[0],
+          status: job.status || "已投递",
           next_action: "跟进",
           next_action_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-          requirements: job.description, // 将岗位JD存储到requirements字段
-          url: job.url || "", // 确保URL字段被正确传递
+          requirements: job.requirements || job.description, // 优先使用requirements字段
+          url: job.url || "",
         }
         
         const result = await addJob(jobData, generateInsight) // 根据用户选择决定是否生成洞察
-    if (result) {
+        if (result) {
           successCount++
         } else {
           failCount++
@@ -333,14 +363,16 @@ AI能力特写：
     }
     
     if (successCount > 0) {
+      // 添加完成后显示成功消息并重置表单状态
       alert(`成功添加 ${successCount} 个岗位${failCount > 0 ? `，失败 ${failCount} 个` : ''}`)
-      // 重置状态
-      setAiJobText("")
-      setParsedJobs([])
-      setIsAIJobParseOpen(false)
     } else {
       alert("添加失败，请重试")
     }
+    
+    // 无论成功失败都重置表单状态
+    setAiJobText("")
+    setParsedJobs([])
+    setGenerateInsight(false)
   }
 
   const [updatingJobId, setUpdatingJobId] = useState<number | null>(null)
@@ -352,7 +384,7 @@ AI能力特写：
   
 
 
-  // 检查用户是否有邮箱授权码
+  // 检查用户是否有邮箱授权码 - 添加错误处理和超时
   const checkEmailAuthCode = async () => {
     const userId = localStorage.getItem("user_id")
     if (!userId) {
@@ -360,14 +392,30 @@ AI能力特写：
     }
 
     try {
-      const response = await fetch(`/api/user/auth-code-status?userId=${userId}`)
+      // 添加超时处理
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5秒超时
+      
+      const response = await fetch(`/api/user/auth-code-status?userId=${userId}`, {
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      
       if (response.ok) {
         const data = await response.json()
         setHasEmailAuthCode(data.hasAuthCode)
         return data.hasAuthCode
+      } else {
+        console.warn('授权码状态检查失败，状态码:', response.status)
       }
     } catch (error) {
-      console.error('检查授权码状态失败:', error)
+      if (error.name === 'AbortError') {
+        console.warn('授权码状态检查超时')
+      } else {
+        console.error('检查授权码状态失败:', error)
+      }
+      // 忽略错误，不影响应用功能
     }
     return false
   }
@@ -2182,7 +2230,7 @@ AI能力特写：
             <Button 
               onClick={() => {
                 setIsAddOptionsOpen(false)
-                setIsAddJobOpen(true)
+                router.push('/add-job')
               }}
               className="w-full bg-black hover:bg-gray-800 text-white h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
             >
@@ -2192,7 +2240,7 @@ AI能力特写：
             <Button 
               onClick={() => {
                 setIsAddOptionsOpen(false)
-                setIsAIJobParseOpen(true)
+                router.push('/add-job')
               }}
               className="w-full bg-black hover:bg-gray-800 text-white h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
             >
@@ -2545,98 +2593,155 @@ AI能力特写：
                 </p>
                     </div>
 
-              {/* 解析结果预览 */}
-              {parsedJobs.length > 0 && (
+              {/* 职位信息表单 - 始终显示，支持手动填写和AI解析填充 */}
               <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    解析结果预览 ({parsedJobs.length} 个岗位)
-                  </h3>
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {parsedJobs.map((job, index) => (
-                      <Card key={index} className="border-[#E0E9F0] bg-white/90 backdrop-blur-sm">
-                        <CardContent className="p-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                              <Label className="text-gray-700 font-medium text-sm">公司名称</Label>
-                      <Input
-                                value={job.company}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].company = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
-                      />
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  {parsedJobs.length > 0 ? `解析结果预览 (${parsedJobs.length} 个岗位)` : '职位信息表单'}
+                </h3>
+                
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {/* 确保至少有一个空表单供用户填写 */}
+                  {(parsedJobs.length > 0 ? parsedJobs : [{}]).map((job, index) => (
+                    <Card key={index} className="border-[#E0E9F0] bg-white/90 backdrop-blur-sm">
+                      <CardContent className="p-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">公司名称 <span className="text-red-500">*</span></Label>
+                            <Input
+                              value={job.company || ''}
+                              onChange={(e) => {
+                                // 如果是新添加的空表单，先初始化parsedJobs
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], company: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              placeholder="请输入公司名称"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">职位名称 <span className="text-red-500">*</span></Label>
+                            <Input
+                              value={job.position || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], position: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              placeholder="请输入职位名称"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">工作地点</Label>
+                            <Input
+                              value={job.location || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], location: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              placeholder="请输入工作地点"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">薪资待遇</Label>
+                            <Input
+                              value={job.salary || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], salary: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              placeholder="请输入薪资待遇"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">投递日期</Label>
+                            <Input
+                              type="date"
+                              value={job.applied_date || new Date().toISOString().split('T')[0]}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], applied_date: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">投递状态</Label>
+                            <select
+                              value={job.status || '已投递'}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], status: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 rounded-md px-3 py-2 w-full"
+                            >
+                              <option value="已投递">已投递</option>
+                              <option value="待处理">待处理</option>
+                              <option value="面试中">面试中</option>
+                              <option value="已通过">已通过</option>
+                              <option value="已拒绝">已拒绝</option>
+                            </select>
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">投递网址</Label>
+                            <Input
+                              type="url"
+                              value={job.url || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], url: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              placeholder="请输入投递网址"
+                            />
+                          </div>
+                          <div className="col-span-1 sm:col-span-2">
+                            <Label className="text-gray-700 font-medium text-sm">岗位描述</Label>
+                            <Textarea
+                              value={job.description || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], description: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              rows={3}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
+                            />
+                          </div>
+                          <div className="col-span-1 sm:col-span-2">
+                            <Label className="text-gray-700 font-medium text-sm">岗位要求</Label>
+                            <Textarea
+                              value={job.requirements || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], requirements: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              rows={3}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  
+                  {/* 无解析结果时的提示信息 */}
+                  {parsedJobs.length === 0 && (
+                    <div className="mt-4 p-4 bg-[#E0E9F0]/20 rounded-lg text-center text-gray-500">
+                      <p className="text-sm">您可以手动填写职位信息，或者在上方输入岗位描述文本并点击"开始解析"由AI自动填充</p>
                     </div>
-                      <div>
-                              <Label className="text-gray-700 font-medium text-sm">职位名称</Label>
-                        <Input
-                                value={job.position}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].position = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
-                        />
-                      </div>
-                      <div>
-                              <Label className="text-gray-700 font-medium text-sm">工作地点</Label>
-                        <Input
-                                value={job.location}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].location = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
-                              />
-                    </div>
-                    <div>
-                              <Label className="text-gray-700 font-medium text-sm">薪资待遇</Label>
-                      <Input
-                                value={job.salary}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].salary = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
-                      />
-                    </div>
-                            <div className="col-span-1 sm:col-span-2">
-                              <Label className="text-gray-700 font-medium text-sm">岗位描述</Label>
-                              <Textarea
-                                value={job.description}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].description = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                rows={3}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
-                              />
-                      </div>
-                            <div className="col-span-1 sm:grid-cols-2">
-                              <Label className="text-gray-700 font-medium text-sm">岗位要求</Label>
-                              <Textarea
-                                value={job.requirements}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].requirements = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                rows={3}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
-                              />
-                      </div>
-                    </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
 
@@ -2737,7 +2842,7 @@ AI能力特写：
             variant="ghost" 
             size="icon"
             className="w-12 h-12 rounded-full bg-gradient-to-r from-[#4285f4] to-[#2a97f3] text-white hover:from-[#2a97f3] hover:to-[#4285f4] shadow-lg transition-all duration-200"
-            onClick={() => setIsAddOptionsOpen(true)}
+            onClick={() => router.push('/add-job')}
           >
             <Plus className="h-6 w-6" />
           </Button>
