@@ -138,8 +138,12 @@ const AddJobPage = () => {
     
     if (successCount > 0) {
       alert(`成功添加 ${successCount} 个岗位${failCount > 0 ? `，失败 ${failCount} 个` : ''}`)
-      // 成功添加后立即返回上一页，避免刷新
-      router.back()
+      // 添加成功后返回职位管理页面
+      console.log('跳转回首页...')
+      // 使用setTimeout确保alert完全关闭后再跳转
+      setTimeout(() => {
+        router.push("/")
+      }, 100)
     } else {
       alert("添加失败，请重试")
     }
@@ -172,10 +176,6 @@ const AddJobPage = () => {
       {/* 主内容区 */}
       <div className="flex-1 overflow-y-auto py-6">
         <div className="max-w-4xl mx-auto space-y-8">
-          {/* 页面指引 */}
-          <div className="p-5 bg-[#E0E9F0]/20 rounded-lg text-center text-gray-500">
-            <p>您可以手动填写职位信息，或者在下方输入岗位描述文本并点击"开始解析"由AI自动填充</p>
-          </div>
           {/* 输入区域 */}
           <div className="space-y-4">
             <Label htmlFor="aiJobText" className="text-gray-700 font-medium">
@@ -390,7 +390,12 @@ const AddJobPage = () => {
                 </Card>
               ))}
               
-
+              {/* 无解析结果时的提示信息 */}
+              {parsedJobs.length === 0 && (
+                <div className="mt-4 p-5 bg-[#E0E9F0]/20 rounded-lg text-center text-gray-500">
+                  <p>您可以手动填写职位信息，或者在上方输入岗位描述文本并点击"开始解析"由AI自动填充</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -409,7 +414,7 @@ const AddJobPage = () => {
           {parsedJobs.length > 0 && (
             <Button 
               onClick={addParsedJobs}
-              className="bg-black hover:bg-gray-50 hover:text-black font-medium px-6 py-3 shadow-sm hover:shadow-md transition-all duration-200"
+              className="bg-black hover:bg-gray-800 text-white font-medium px-6 py-3 shadow-sm hover:shadow-md transition-all duration-200"
             >
               确认添加 ({parsedJobs.length} 个岗位)
             </Button>
