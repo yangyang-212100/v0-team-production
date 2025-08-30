@@ -1414,7 +1414,7 @@ AI能力特写：
                            <div className="flex space-x-2 mt-4">
               <Dialog>
                 <DialogTrigger asChild>
-                                 <Button variant="outline" size="sm" className="flex-1 bg-white text-black border-black hover:bg-gray-50">
+                                 <Button variant="outline" size="sm" className="flex-1 bg-white text-black border-black hover:bg-gray-800 hover:text-white">
                                    <Eye className="h-4 w-4 mr-1" />
                                    详情
                                  </Button>
@@ -1531,7 +1531,7 @@ AI能力特写：
 
                              <Button 
                                size="sm" 
-                               className="flex-1 bg-black hover:bg-gray-800 text-white border border-black"
+                               className="flex-1 bg-white text-black border-black hover:bg-gray-50"
                                onClick={() => {
                                  router.push(`/insights/${encodeURIComponent(job.company)}/${encodeURIComponent(job.position)}`)
                                }}
@@ -1671,7 +1671,7 @@ AI能力特写：
                              <Button 
                                variant="outline" 
                                size="sm" 
-                               className="flex-1 bg-white text-black border-black hover:bg-gray-50"
+                               className="flex-1 bg-white text-black border-black hover:bg-gray-800 hover:text-white"
                                onClick={() => handleDeleteJob(job.id)}
                              >
                                <Trash2 className="h-4 w-4 mr-1" />
@@ -1747,7 +1747,7 @@ AI能力特写：
                            <div className="flex space-x-2 mt-4">
                              <Dialog>
                                <DialogTrigger asChild>
-                                 <Button variant="outline" size="sm" className="flex-1 bg-white text-black border-black hover:bg-gray-50">
+                                 <Button variant="outline" size="sm" className="flex-1 bg-white text-black border-black hover:bg-gray-800 hover:text-white">
                                    <Eye className="h-4 w-4 mr-1" />
                                    详情
                                  </Button>
@@ -1864,7 +1864,7 @@ AI能力特写：
 
                              <Button 
                                size="sm" 
-                               className="flex-1 bg-black hover:bg-gray-800 text-white border border-black"
+                               className="flex-1 bg-black hover:bg-gray-50 hover:text-black text-white border border-black"
                                onClick={() => {
                                  router.push(`/insights/${encodeURIComponent(job.company)}/${encodeURIComponent(job.position)}`)
                                }}
@@ -2004,7 +2004,7 @@ AI能力特写：
                              <Button 
                                variant="outline" 
                                size="sm" 
-                               className="flex-1 bg-white text-black border-black hover:bg-gray-50"
+                               className="flex-1 bg-white text-black border-black hover:bg-gray-800 hover:text-white"
                                onClick={() => handleDeleteJob(job.id)}
                              >
                                <Trash2 className="h-4 w-4 mr-1" />
