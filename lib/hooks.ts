@@ -43,19 +43,20 @@ export function useJobs() {
         return null
       }
       
-      console.log('Creating job payload:', job)
       const newJob = await jobsApi.create(job)
       if (newJob) {
         setJobs(prevJobs => [newJob, ...prevJobs])
         
-        // 只有在需要时才触发AI生成洞察
+        // 只有在需要时才触发AI生成洞察 - 改为异步后台任务，不阻塞主流程
         if (generateInsight) {
-          try {
-            await generateInsights(job.company, job.position)
-          } catch (insightError) {
-            console.error('Error generating insights:', insightError)
-            // 不影响职位添加，只记录错误
-          }
+          // 使用setTimeout将洞察生成放入下一个事件循环，不阻塞UI响应
+          setTimeout(async () => {
+            try {
+              await generateInsights(job.company, job.position)
+            } catch (insightError) {
+              // 不影响职位添加，只记录错误
+            }
+          }, 0)
         }
         
         return newJob
@@ -403,4 +404,4 @@ export function useEmails() {
     error,
     fetchEmails
   }
-} 
+}
