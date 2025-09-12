@@ -405,19 +405,19 @@ const AddJobPage = () => {
       </div>
       
       {/* 底部操作按钮 */}
-      <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-[#E0E9F0] p-4 shadow-lg z-10">
+      <div className="sticky bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-[#E0E9F0] dark:border-gray-700 p-4 shadow-lg z-10">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
           <Button 
             variant="outline" 
             onClick={() => router.push("/")}
-            className="bg-white text-black border-black hover:bg-gray-50 px-6 py-3"
+            className="bg-white dark:bg-gray-800 text-black dark:text-white border-black dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 px-6 py-3 rounded-md transition-all duration-200"
           >
             取消
           </Button>
           {parsedJobs.length > 0 && (
             <Button 
               onClick={addParsedJobs}
-              className="bg-black hover:bg-gray-50 hover:text-black font-medium px-6 py-3 shadow-sm hover:shadow-md transition-all duration-200"
+              className="bg-black dark:bg-blue-600 text-white font-medium px-6 py-3 rounded-md shadow-sm hover:shadow-md transition-all duration-200"
             >
               确认添加 ({parsedJobs.length} 个岗位)
             </Button>

@@ -2844,6 +2844,7 @@ AI能力特写：
             className="flex flex-col items-center space-y-1 text-gray-600 hover:text-[#B4C2CD] transition-colors"
             onClick={() => router.push("/")}
           >
+            <Briefcase className="h-5 w-5" />
             <span className="text-sm">职位管理</span>
           </Button>
           <Button 
@@ -2859,6 +2860,7 @@ AI能力特写：
             className="flex flex-col items-center space-y-1 text-gray-600 hover:text-[#B4C2CD] transition-colors"
             onClick={() => router.push("/tasks")}
           >
+            <CheckCircle2 className="h-5 w-5" />
             <span className="text-sm">OFFER</span>
           </Button>
                   </div>
