@@ -883,24 +883,32 @@ AI能力特写：
   ).length
   const completedApplications = jobs.filter((job) => job.status === "已完成").length
 
+  // 职位卡片状态框样式方案：所有字体改为黑色，框内按状态区分颜色
   const getStatusColor = (status: string) => {
     switch (status) {
+      // 已投递：白色背景，黑色文字，浅灰色边框
       case "已投递":
-        return "bg-[#E0E9F0] text-[#4A5568] border-[#B4C2CD]"
+        return "bg-white text-black border-[#E0E9F0]"
+      // 待处理：浅黄色背景，黑色文字，中黄色边框
+      case "待处理":
       case "笔试":
-        return "bg-[#FEF5E7] text-[#C05621] border-[#F6AD55]"
+        return "bg-[#FEF5E7] text-black border-[#F6AD55]"
+      // 面试中：浅蓝色背景，黑色文字，天蓝色边框
+      case "面试中":
       case "一面":
-        return "bg-[#FED7D7] text-[#C53030] border-[#FC8181]"
       case "二面":
-        return "bg-[#FED7D7] text-[#C53030] border-[#FC8181]"
       case "三面":
-        return "bg-[#FED7D7] text-[#C53030] border-[#FC8181]"
+        return "bg-[#E0F2FE] text-black border-[#93C5FD]"
+      // 已通过：绿色背景，黑色文字，嫩绿色边框
+      case "已通过":
       case "OFFER":
-        return "bg-[#C6F6D5] text-[#22543D] border-[#68D391]"
+        return "bg-[#DCFCE7] text-black border-[#86EFAC]"
+      // 已拒绝：灰色背景，黑色文字，中灰色边框
       case "已拒绝":
-        return "bg-[#E2E8F0] text-[#64748B] border-[#CBD5E1]"
+        return "bg-[#F1F5F9] text-black border-[#CBD5E1]"
+      // 默认状态：白色背景，黑色文字，浅灰色边框
       default:
-        return "bg-[#E0E9F0] text-[#4A5568] border-[#B4C2CD]"
+        return "bg-white text-black border-[#E0E9F0]"
     }
   }
 
@@ -984,8 +992,8 @@ AI能力特写：
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
               <Logo size="lg" className="flex-shrink-0" />
-              <div className="border-2 border-[#E0E9F0] rounded-xl px-4 py-2 bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] shadow-sm">
-                <span className="text-gray-700 font-bold text-lg">职得</span>
+              <div className="border-2 border-[#E0E9F0] rounded-xl px-4 py-2 bg-gradient-to-r from-[#4285f4] to-[#2a97f3] hover:from-[#2a97f3] hover:to-[#4285f4] shadow-sm hover:shadow-md transition-all duration-200">
+                <span className="text-white font-bold text-lg">职得</span>
               </div>
             </div>
           </div>

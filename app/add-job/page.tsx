@@ -146,7 +146,14 @@ const AddJobPage = () => {
   }
   
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 sm:p-6 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-[#d6e5fd] via-[#d6e5fd] to-[#f7f7f7] p-4 sm:p-6 flex flex-col relative overflow-hidden">
+      {/* 背景装饰 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#E0E9F0]/30 rounded-full blur-xl"></div>
+        <div className="absolute top-1/3 -left-16 w-32 h-32 bg-[#B4C2CD]/20 rounded-full blur-lg"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-[#E0E9F0]/40 rounded-full blur-md"></div>
+      </div>
+      <div className="relative z-10 flex-1 flex flex-col">
       {/* 顶部导航栏 */}
       <div className="flex items-center justify-between py-4 border-b border-[#E0E9F0]">
         <div className="flex items-center">
@@ -172,8 +179,9 @@ const AddJobPage = () => {
       {/* 主内容区 */}
       <div className="flex-1 overflow-y-auto py-6">
         <div className="max-w-4xl mx-auto space-y-8">
-          {/* 页面指引 */}
-          <div className="p-5 bg-[#E0E9F0]/20 rounded-lg text-center text-gray-500">
+          {/* 页面指引区域（图片+文本） */}
+          <div className="flex items-center p-5 bg-[#E0E9F0]/20 rounded-lg text-gray-500">
+            <img src="/LOGO2.png" alt="职位添加提示" className="w-1/10 h-auto mr-4" />
             <p>您可以手动填写职位信息，或者在下方输入岗位描述文本并点击"开始解析"由AI自动填充</p>
           </div>
           {/* 输入区域 */}
@@ -415,6 +423,7 @@ const AddJobPage = () => {
             </Button>
           )}
         </div>
+      </div>
       </div>
     </div>
   )
