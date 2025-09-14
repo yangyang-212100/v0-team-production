@@ -492,6 +492,28 @@ AI能力特写：
 
 
 
+  // 统一数据刷新函数
+  const refreshAllData = async () => {
+    try {
+      // 刷新邮件列表
+      await fetchEmails()
+      
+      // 刷新职位数据（通过重新获取所有职位）
+      // 注意：这里需要确保jobs状态能正确更新
+      // 如果有专门的刷新函数，可以调用它
+      if (typeof refetchJobs === 'function') {
+        await refetchJobs()
+      }
+      
+      // 刷新提醒数据（如果有）
+      if (typeof fetchReminders === 'function') {
+        await fetchReminders()
+      }
+    } catch (error) {
+      console.error('刷新数据失败:', error)
+    }
+  }
+
   // 邮件解析功能入口
   const handleEmailParseClick = async () => {
     const hasAuth = await checkEmailAuthCode()
@@ -554,8 +576,59 @@ AI能力特写：
         }),
       })
       
-      // 刷新邮件列表
-      await fetchEmails()
+      // 新添加：如果解析结果有效，自动更新职位状态
+      if (result && result.company && result.position && result.action) {
+        // 查找匹配的职位
+        const matchingJob = jobs.find(job => 
+          job.company === result.company && job.position === result.position
+        )
+
+        if (matchingJob) {
+          // 更新职位状态
+          let newStatus = result.action
+          let newProgress = 25
+          
+          switch (result.action) {
+            case '已投递':
+              newProgress = 25
+              break
+            case '笔试':
+              newProgress = 50
+              break
+            case '面试':
+              newProgress = 75
+              break
+            case '已OFFER':
+              newProgress = 100
+              break
+            case '已拒绝':
+              newProgress = 0
+              break
+          }
+
+          await updateJobStatus(
+            matchingJob.id, 
+            newStatus, 
+            newProgress,
+            result.datetime, // interview_datetime
+            undefined, // interview_location_type
+            result.url || result.location // interview_location
+          )
+          
+          // 显示更新成功信息
+          showUpdateSuccessDialog({
+            company: result.company,
+            position: result.position,
+            oldStatus: matchingJob.status,
+            newStatus: newStatus,
+            emailAction: result.action,
+            datetime: result.datetime
+          })
+        }
+      }
+      
+      // 刷新所有相关数据（邮件列表、职位卡片、日历）
+      await refreshAllData()
       
     } catch (error) {
       console.error('解析邮件失败:', error)
@@ -668,8 +741,8 @@ AI能力特写：
     
     if (updatedCount > 0) {
       alert(`成功更新 ${updatedCount} 个职位状态${errorCount > 0 ? `，${errorCount} 个失败` : ''}`)
-      // 刷新数据
-      await fetchEmails()
+      // 刷新所有相关数据（邮件列表、职位卡片、日历）
+      await refreshAllData()
     } else if (errorCount > 0) {
       alert(`更新失败，请重试`)
     }
