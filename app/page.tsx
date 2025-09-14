@@ -47,6 +47,8 @@ export default function JobSearchAssistant() {
   const [emailAuthCode, setEmailAuthCode] = useState("")
   const [isEmailAuthLoading, setIsEmailAuthLoading] = useState(false)
   const [hasEmailAuthCode, setHasEmailAuthCode] = useState(false)
+  const [qqEmail, setQQEmail] = useState("")
+  const [isQQEmailValid, setIsQQEmailValid] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isJobListSearching, setIsJobListSearching] = useState(false)
@@ -388,6 +390,7 @@ AI能力特写：
   const checkEmailAuthCode = async () => {
     const userId = localStorage.getItem("user_id")
     if (!userId) {
+      setHasEmailAuthCode(false)
       return false
     }
 
@@ -405,9 +408,15 @@ AI能力特写：
       if (response.ok) {
         const data = await response.json()
         setHasEmailAuthCode(data.hasAuthCode)
+        // 如果有邮箱地址，设置到状态中
+        if (data.qqEmail) {
+          setQQEmail(data.qqEmail)
+          setIsQQEmailValid(true)
+        }
         return data.hasAuthCode
       } else {
         console.warn('授权码状态检查失败，状态码:', response.status)
+        setHasEmailAuthCode(false)
       }
     } catch (error) {
       if (error.name === 'AbortError') {
@@ -415,13 +424,23 @@ AI能力特写：
       } else {
         console.error('检查授权码状态失败:', error)
       }
-      // 忽略错误，不影响应用功能
+      setHasEmailAuthCode(false)
     }
     return false
   }
 
   // 邮箱授权码相关函数
   const handleEmailAuth = async () => {
+    if (!qqEmail.trim()) {
+      alert("请输入QQ邮箱地址")
+      return
+    }
+    
+    if (!isQQEmailValid) {
+      alert("请输入有效的QQ邮箱地址")
+      return
+    }
+    
     if (!emailAuthCode.trim()) {
       alert("请输入邮箱授权码")
       return
@@ -442,7 +461,8 @@ AI能力特写：
         },
         body: JSON.stringify({ 
           userId: parseInt(userId),
-          authCode: emailAuthCode 
+          authCode: emailAuthCode,
+          qqEmail: qqEmail
         }),
       })
 
@@ -1352,11 +1372,11 @@ AI能力特写：
             /* 空状态 - 新用户或全部完成 */
             <div 
               className="border-2 border-dashed border-[#B4C2CD] rounded-2xl p-8 text-center cursor-pointer hover:border-[#E0E9F0] hover:bg-[#E0E9F0]/20 transition-colors bg-gradient-to-r from-[#F5F8FA] to-[#E0E9F0]"
-              onClick={() => setIsAddJobOpen(true)}
+              onClick={() => router.push('/add-job')}
             >
               <Plus className="h-12 w-12 text-[#B4C2CD] mx-auto mb-4" />
                              <p className="text-gray-600 text-sm">
-                 请点击此处添加您的投递职位信息
+                 请点击此处添加您的投递职位信息（支持AI解析）
                </p>
                         </div>
                      ) : (
@@ -2276,13 +2296,38 @@ AI能力特写：
                             <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
               <MessageSquare className="h-5 w-5 mr-2 text-[#B4C2CD]" />
-              邮箱授权码设置
+              邮箱配置设置
                               </DialogTitle>
             <DialogDescription className="text-gray-600">
-              请输入您的QQ邮箱授权码以启用邮件解析功能
+              请输入您的QQ邮箱地址和授权码以启用邮件解析功能
             </DialogDescription>
                             </DialogHeader>
           <div className="py-6 space-y-6">
+                                <div>
+              <Label htmlFor="qqEmail" className="text-gray-700 font-medium text-sm mb-3 block">
+                QQ邮箱地址
+              </Label>
+              <Input
+                id="qqEmail"
+                type="email"
+                value={qqEmail}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setQQEmail(value);
+                  // 简单的邮箱格式验证
+                  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+                  setIsQQEmailValid(value === '' || emailRegex.test(value));
+                }}
+                placeholder="请输入您的QQ邮箱地址"
+                className={`border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-12 text-gray-700 placeholder-gray-500 ${!isQQEmailValid ? 'border-red-500' : ''}`}
+                autoComplete="email"
+              />
+              {!isQQEmailValid && (
+                <p className="text-xs text-red-500 mt-1">
+                  请输入有效的邮箱地址
+                </p>
+              )}
+                                </div>
                                 <div>
               <Label htmlFor="emailAuthCode" className="text-gray-700 font-medium text-sm mb-3 block">
                 QQ邮箱授权码
