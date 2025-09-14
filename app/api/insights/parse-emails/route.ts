@@ -92,10 +92,62 @@ export async function POST(request: NextRequest) {
     // 验证时间格式（如果存在）
     if (parsedResult.datetime) {
       try {
-        new Date(parsedResult.datetime)
+        const date = new Date(parsedResult.datetime)
+        if (isNaN(date.getTime())) {
+          throw new Error('Invalid date')
+        }
+        // 标准化为ISO格式
+        parsedResult.datetime = date.toISOString()
       } catch (error) {
         console.warn('时间格式无效，将忽略时间字段:', parsedResult.datetime)
         delete parsedResult.datetime
+      }
+    }
+
+    // 增强功能：如果时间格式为'9.15日'等格式，尝试转换
+    if (!parsedResult.datetime && emailContent) {
+      try {
+        // 尝试匹配多种日期格式：9.15日、9月15日、9/15等
+        const dateMatch = emailContent.match(/(\d+)\.(\d+)日|(\d+)月(\d+)日|(\d+)\/(\d+)/)
+        if (dateMatch && dateMatch.length >= 3) {
+          let month, day;
+          // 确定匹配的是哪种格式
+          if (dateMatch[1] && dateMatch[2]) {
+            // 9.15日格式
+            month = parseInt(dateMatch[1])
+            day = parseInt(dateMatch[2])
+          } else if (dateMatch[3] && dateMatch[4]) {
+            // 9月15日格式
+            month = parseInt(dateMatch[3])
+            day = parseInt(dateMatch[4])
+          } else if (dateMatch[5] && dateMatch[6]) {
+            // 9/15格式
+            month = parseInt(dateMatch[5])
+            day = parseInt(dateMatch[6])
+          }
+          
+          if (month && day) {
+            const year = new Date().getFullYear()
+            // 创建日期对象（假设是今年）
+            const date = new Date(year, month - 1, day, 9, 0, 0) // 默认为上午9点
+            parsedResult.datetime = date.toISOString()
+          }
+        }
+      } catch (dateError) {
+        console.warn('解析自定义日期格式失败:', dateError)
+      }
+    }
+    
+    // 增强功能：确保正确提取笔试链接
+    if (!parsedResult.url && emailContent) {
+      try {
+        // 匹配各种URL格式，包括带空格的情况
+        const urlMatch = emailContent.match(/(https?:\/\/[^\s]+)/)
+        if (urlMatch && urlMatch.length > 0) {
+          parsedResult.url = urlMatch[0].replace(/[`'"<>]/g, '') // 移除可能的引号和标记
+        }
+      } catch (urlError) {
+        console.warn('提取URL失败:', urlError)
       }
     }
 

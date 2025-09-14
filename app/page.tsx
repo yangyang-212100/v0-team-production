@@ -500,10 +500,7 @@ AI能力特写：
       
       // 刷新职位数据（通过重新获取所有职位）
       // 注意：这里需要确保jobs状态能正确更新
-      // 如果有专门的刷新函数，可以调用它
-      if (typeof refetchJobs === 'function') {
-        await refetchJobs()
-      }
+      await fetchJobs()
       
       // 刷新提醒数据（如果有）
       if (typeof fetchReminders === 'function') {
@@ -550,6 +547,90 @@ AI能力特写：
     }
   }
 
+  // 创建日历待办事项函数
+  const createCalendarReminder = async (result: any, matchingJob: any) => {
+    try {
+      // 检查用户是否已登录
+      const userId = localStorage.getItem('user_id');
+      if (!userId) {
+        console.error('创建日历待办事项失败: 用户未登录');
+        return false;
+      }
+      
+      // 增强逻辑：即使没有datetime，只要有URL或其他重要信息也创建待办
+      if (result.url || result.datetime || result.location) {
+        let reminderTitle = `[${result.company}] ${result.position} - ${result.action}`;
+        let reminderContent = '';
+        let reminderTime = result.datetime || new Date().toISOString();
+        
+        // 构建待办事项内容
+        if (result.location) {
+          reminderContent += `地点：${result.location}\n`;
+        }
+        if (result.url) {
+          reminderContent += `链接：${result.url}\n`;
+        }
+        if (result.datetime) {
+          reminderContent += `时间：${new Date(result.datetime).toLocaleString('zh-CN')}`;
+        }
+        
+        // 添加职位相关信息
+        reminderContent += `\n公司：${result.company}\n职位：${result.position}`;
+
+        // 设置提醒时间（提前30分钟）
+        const reminderDate = new Date(reminderTime);
+        reminderDate.setMinutes(reminderDate.getMinutes() - 30);
+        const notificationTime = reminderDate.toISOString();
+
+        // 根据操作类型设置待办内容和提醒时间
+        switch (result.action) {
+          case '笔试':
+            reminderTitle = `[笔试] ${result.company} ${result.position}`;
+            reminderContent += '\n建议提前准备好相关材料和设备';
+            break;
+          case '面试':
+            reminderTitle = `[面试] ${result.company} ${result.position}`;
+            reminderContent += '\n建议提前复习岗位相关知识和准备自我介绍';
+            break;
+          case '已OFFER':
+          case 'OFFER':
+            reminderTitle = `[OFFER] ${result.company} ${result.position}`;
+            reminderContent += '\n请及时查看并回复OFFER详情';
+            break;
+          default:
+            reminderTitle = `[${result.action}] ${result.company} ${result.position}`;
+        }
+
+        // 调用addReminder函数创建日历待办事项
+        const resultReminder = await addReminder({
+          title: reminderTitle,
+          content: reminderContent,
+          time: reminderTime,
+          date: new Date(reminderTime).toISOString().split('T')[0], // 添加正确的date字段
+          notification_time: notificationTime,
+          job_id: matchingJob.id,
+          completed: false,
+          company: result.company, // 添加company字段
+          type: result.action, // 添加type字段
+          priority: 'high' // 添加priority字段
+        });
+        
+        if (resultReminder) {
+          console.log('日历待办事项创建成功:', resultReminder);
+          return true;
+        } else {
+          console.error('日历待办事项创建失败: addReminder返回null');
+          return false;
+        }
+      }
+      console.warn('未创建日历待办事项: 缺少必要信息');
+      return false;
+    } catch (error) {
+      console.error('创建日历待办事项失败:', error);
+      return false;
+    }
+  }
+
   const handleParseEmail = async (email: any) => {
     // 检查邮件是否已经解析过
     if (email.parsed_date) {
@@ -576,18 +657,30 @@ AI能力特写：
         }),
       })
       
-      // 新添加：如果解析结果有效，自动更新职位状态
+      // 如果解析结果有效，自动更新职位状态
       if (result && result.company && result.position && result.action) {
-        // 查找匹配的职位
-        const matchingJob = jobs.find(job => 
+        // 增强模糊匹配逻辑
+        let matchingJob = jobs.find(job => 
           job.company === result.company && job.position === result.position
-        )
+        );
+        
+        // 如果没有精确匹配，尝试模糊匹配
+        if (!matchingJob) {
+          matchingJob = jobs.find(job => 
+            job.company.includes(result.company) && job.position.includes(result.position)
+          );
+        }
 
         if (matchingJob) {
+          // 记录原始状态，用于日志
+          const originalStatus = matchingJob.status;
+          const originalProgress = matchingJob.progress;
+          
           // 更新职位状态
           let newStatus = result.action
           let newProgress = 25
           
+          // 完善操作类型对应的状态和进度
           switch (result.action) {
             case '已投递':
               newProgress = 25
@@ -595,10 +688,24 @@ AI能力特写：
             case '笔试':
               newProgress = 50
               break
+            case '一面':
+              newStatus = '一面';
+              newProgress = 50
+              break
+            case '二面':
+              newStatus = '二面';
+              newProgress = 70
+              break
+            case '三面':
+              newStatus = '三面';
+              newProgress = 90
+              break
             case '面试':
               newProgress = 75
               break
             case '已OFFER':
+            case 'OFFER':
+              newStatus = 'OFFER';
               newProgress = 100
               break
             case '已拒绝':
@@ -606,24 +713,35 @@ AI能力特写：
               break
           }
 
+          // 调用更新职位状态API
           await updateJobStatus(
             matchingJob.id, 
             newStatus, 
             newProgress,
             result.datetime, // interview_datetime
-            undefined, // interview_location_type
+            result.location ? '线下' : (result.url ? '线上' : undefined), // interview_location_type
             result.url || result.location // interview_location
           )
           
-          // 显示更新成功信息
+          // 创建日历待办事项
+          const reminderCreated = await createCalendarReminder(result, matchingJob);
+          
+          // 显示更新成功信息，包含日历待办创建状态
           showUpdateSuccessDialog({
             company: result.company,
             position: result.position,
-            oldStatus: matchingJob.status,
+            oldStatus: originalStatus,
             newStatus: newStatus,
             emailAction: result.action,
-            datetime: result.datetime
+            datetime: result.datetime,
+            reminderCreated: reminderCreated
           })
+          
+          // 记录日志
+          console.log(`自动更新职位状态: ${result.company} ${result.position} 从 ${originalStatus}(${originalProgress}%) 更新为 ${newStatus}(${newProgress}%)`);
+        } else {
+          console.log(`未找到匹配的职位: ${result.company} ${result.position}`);
+          alert(`未找到匹配的职位: ${result.company} ${result.position}\n建议手动添加或检查职位信息是否正确。`);
         }
       }
       
@@ -661,6 +779,7 @@ AI能力特写：
 
     setIsEmailUpdating(true)
     let updatedCount = 0
+    let reminderCount = 0
     let errorCount = 0
 
     // 只解析未解析的邮件
@@ -670,15 +789,23 @@ AI能力特写：
         
         if (result && result.company && result.position && result.action) {
           // 查找匹配的职位
-          const matchingJob = jobs.find(job => 
+          let matchingJob = jobs.find(job => 
             job.company === result.company && job.position === result.position
-          )
+          );
+          
+          // 如果没有精确匹配，尝试模糊匹配
+          if (!matchingJob) {
+            matchingJob = jobs.find(job => 
+              job.company.includes(result.company) && job.position.includes(result.position)
+            );
+          }
 
           if (matchingJob) {
             // 更新职位状态
             let newStatus = result.action
             let newProgress = 25
             
+            // 完善操作类型对应的状态和进度
             switch (result.action) {
               case '已投递':
                 newProgress = 25
@@ -686,10 +813,24 @@ AI能力特写：
               case '笔试':
                 newProgress = 50
                 break
+              case '一面':
+                newStatus = '一面';
+                newProgress = 50
+                break
+              case '二面':
+                newStatus = '二面';
+                newProgress = 70
+                break
+              case '三面':
+                newStatus = '三面';
+                newProgress = 90
+                break
               case '面试':
                 newProgress = 75
                 break
               case '已OFFER':
+              case 'OFFER':
+                newStatus = 'OFFER';
                 newProgress = 100
                 break
               case '已拒绝':
@@ -702,9 +843,15 @@ AI能力特写：
               newStatus, 
               newProgress,
               result.datetime, // interview_datetime
-              undefined, // interview_location_type
+              result.location ? '线下' : (result.url ? '线上' : undefined), // interview_location_type
               result.url || result.location // interview_location
             )
+
+            // 创建日历待办事项
+            const reminderCreated = await createCalendarReminder(result, matchingJob);
+            if (reminderCreated) {
+              reminderCount++;
+            }
 
             // 标记邮件为已解析
             await fetch('/api/emails/mark-parsed', {
@@ -727,7 +874,8 @@ AI能力特写：
               oldStatus: matchingJob.status,
               newStatus: newStatus,
               emailAction: result.action,
-              datetime: result.datetime
+              datetime: result.datetime,
+              reminderCreated: reminderCreated
             })
           }
         }
@@ -740,7 +888,7 @@ AI能力特写：
     setIsEmailUpdating(false)
     
     if (updatedCount > 0) {
-      alert(`成功更新 ${updatedCount} 个职位状态${errorCount > 0 ? `，${errorCount} 个失败` : ''}`)
+      alert(`成功更新 ${updatedCount} 个职位状态${reminderCount > 0 ? `，创建了 ${reminderCount} 个日历待办事项` : ''}${errorCount > 0 ? `，${errorCount} 个失败` : ''}`)
       // 刷新所有相关数据（邮件列表、职位卡片、日历）
       await refreshAllData()
     } else if (errorCount > 0) {
@@ -2937,6 +3085,12 @@ AI能力特写：
                         <span className="font-medium text-gray-700">时间：</span>
                         <span className="text-gray-900">{new Date(updateSuccessInfo.datetime).toLocaleString('zh-CN')}</span>
                             </div>
+                    )}
+                    {updateSuccessInfo.reminderCreated && (
+                      <div className="col-span-2">
+                        <span className="font-medium text-gray-700">日历待办：</span>
+                        <span className="text-gray-900 text-blue-600 font-semibold">已创建日历待办事项</span>
+                      </div>
                     )}
                           </div>
                         </div>
