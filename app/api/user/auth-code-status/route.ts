@@ -13,10 +13,10 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // 获取用户的授权码状态
+    // 获取用户的授权码和邮箱状态
     const { data, error } = await supabase
       .from('users')
-      .select('qq_auth_code')
+      .select('qq_auth_code, qq_email')
       .eq('id', userId)
       .single()
 
@@ -32,7 +32,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ 
       hasAuthCode,
-      authCode: hasAuthCode ? '***' : null // 不返回实际的授权码
+      authCode: hasAuthCode ? '***' : null, // 不返回实际的授权码
+      qqEmail: data?.qq_email || null // 返回邮箱地址
     })
 
   } catch (error) {

@@ -47,6 +47,8 @@ export default function JobSearchAssistant() {
   const [emailAuthCode, setEmailAuthCode] = useState("")
   const [isEmailAuthLoading, setIsEmailAuthLoading] = useState(false)
   const [hasEmailAuthCode, setHasEmailAuthCode] = useState(false)
+  const [qqEmail, setQQEmail] = useState("")
+  const [isQQEmailValid, setIsQQEmailValid] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isJobListSearching, setIsJobListSearching] = useState(false)
@@ -249,11 +251,29 @@ AI能力特写：
       return
     }
     
+    // 检查用户是否已登录
+    const userId = localStorage.getItem("user_id")
+    if (!userId) {
+      alert("请先登录后再添加职位")
+      setIsAIJobParseOpen(false)
+      return
+    }
+    
     setIsParsing(true)
     try {
       // 使用AI解析文本，提取岗位信息
       const jobs = await parseJobTextWithAI(aiJobText)
-      setParsedJobs(jobs)
+      
+      // 为每个解析的职位自动填充默认信息
+      const jobsWithDefaults = jobs.map(job => ({
+        ...job,
+        status: "已投递",
+        applied_date: new Date().toISOString().split('T')[0], // 当前日期
+        progress: 25, // 初始进度25%
+        type: "全职"
+      }))
+      
+      setParsedJobs(jobsWithDefaults)
     } catch (error) {
       console.error('解析失败:', error)
       alert("解析失败，请检查输入格式")
@@ -298,11 +318,23 @@ AI能力特写：
       return
     }
     
-    const userId = localStorage.getItem("user_id")
-    if (!userId) {
-      alert("用户未登录")
+    // 验证必填字段
+    const invalidJobs = parsedJobs.filter(job => !job.company?.trim() || !job.position?.trim())
+    if (invalidJobs.length > 0) {
+      alert("请确保所有岗位的公司名称和职位名称都已填写")
       return
     }
+    
+    // 检查用户是否已登录
+    const userId = localStorage.getItem("user_id")
+    if (!userId) {
+      alert("请先登录后再添加职位")
+      setIsAIJobParseOpen(false)
+      return
+    }
+    
+    // 点击确认后立即关闭对话框
+    setIsAIJobParseOpen(false)
     
     let successCount = 0
     let failCount = 0
@@ -312,16 +344,16 @@ AI能力特写：
         const jobData = {
           ...job,
           user_id: parseInt(userId),
-          applied_date: new Date().toISOString().split("T")[0],
-          progress: 25,
+          applied_date: job.applied_date || new Date().toISOString().split("T")[0],
+          status: job.status || "已投递",
           next_action: "跟进",
           next_action_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-          requirements: job.description, // 将岗位JD存储到requirements字段
-          url: job.url || "", // 确保URL字段被正确传递
+          requirements: job.requirements || job.description, // 优先使用requirements字段
+          url: job.url || "",
         }
         
         const result = await addJob(jobData, generateInsight) // 根据用户选择决定是否生成洞察
-    if (result) {
+        if (result) {
           successCount++
         } else {
           failCount++
@@ -333,14 +365,16 @@ AI能力特写：
     }
     
     if (successCount > 0) {
+      // 添加完成后显示成功消息并重置表单状态
       alert(`成功添加 ${successCount} 个岗位${failCount > 0 ? `，失败 ${failCount} 个` : ''}`)
-      // 重置状态
-      setAiJobText("")
-      setParsedJobs([])
-      setIsAIJobParseOpen(false)
     } else {
       alert("添加失败，请重试")
     }
+    
+    // 无论成功失败都重置表单状态
+    setAiJobText("")
+    setParsedJobs([])
+    setGenerateInsight(false)
   }
 
   const [updatingJobId, setUpdatingJobId] = useState<number | null>(null)
@@ -352,28 +386,61 @@ AI能力特写：
   
 
 
-  // 检查用户是否有邮箱授权码
+  // 检查用户是否有邮箱授权码 - 添加错误处理和超时
   const checkEmailAuthCode = async () => {
     const userId = localStorage.getItem("user_id")
     if (!userId) {
+      setHasEmailAuthCode(false)
       return false
     }
 
     try {
-      const response = await fetch(`/api/user/auth-code-status?userId=${userId}`)
+      // 添加超时处理
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5秒超时
+      
+      const response = await fetch(`/api/user/auth-code-status?userId=${userId}`, {
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      
       if (response.ok) {
         const data = await response.json()
         setHasEmailAuthCode(data.hasAuthCode)
+        // 如果有邮箱地址，设置到状态中
+        if (data.qqEmail) {
+          setQQEmail(data.qqEmail)
+          setIsQQEmailValid(true)
+        }
         return data.hasAuthCode
+      } else {
+        console.warn('授权码状态检查失败，状态码:', response.status)
+        setHasEmailAuthCode(false)
       }
     } catch (error) {
-      console.error('检查授权码状态失败:', error)
+      if (error.name === 'AbortError') {
+        console.warn('授权码状态检查超时')
+      } else {
+        console.error('检查授权码状态失败:', error)
+      }
+      setHasEmailAuthCode(false)
     }
     return false
   }
 
   // 邮箱授权码相关函数
   const handleEmailAuth = async () => {
+    if (!qqEmail.trim()) {
+      alert("请输入QQ邮箱地址")
+      return
+    }
+    
+    if (!isQQEmailValid) {
+      alert("请输入有效的QQ邮箱地址")
+      return
+    }
+    
     if (!emailAuthCode.trim()) {
       alert("请输入邮箱授权码")
       return
@@ -394,7 +461,8 @@ AI能力特写：
         },
         body: JSON.stringify({ 
           userId: parseInt(userId),
-          authCode: emailAuthCode 
+          authCode: emailAuthCode,
+          qqEmail: qqEmail
         }),
       })
 
@@ -423,6 +491,25 @@ AI能力特写：
   }
 
 
+
+  // 统一数据刷新函数
+  const refreshAllData = async () => {
+    try {
+      // 刷新邮件列表
+      await fetchEmails()
+      
+      // 刷新职位数据（通过重新获取所有职位）
+      // 注意：这里需要确保jobs状态能正确更新
+      await fetchJobs()
+      
+      // 刷新提醒数据（如果有）
+      if (typeof fetchReminders === 'function') {
+        await fetchReminders()
+      }
+    } catch (error) {
+      console.error('刷新数据失败:', error)
+    }
+  }
 
   // 邮件解析功能入口
   const handleEmailParseClick = async () => {
@@ -460,6 +547,90 @@ AI能力特写：
     }
   }
 
+  // 创建日历待办事项函数
+  const createCalendarReminder = async (result: any, matchingJob: any) => {
+    try {
+      // 检查用户是否已登录
+      const userId = localStorage.getItem('user_id');
+      if (!userId) {
+        console.error('创建日历待办事项失败: 用户未登录');
+        return false;
+      }
+      
+      // 增强逻辑：即使没有datetime，只要有URL或其他重要信息也创建待办
+      if (result.url || result.datetime || result.location) {
+        let reminderTitle = `[${result.company}] ${result.position} - ${result.action}`;
+        let reminderContent = '';
+        let reminderTime = result.datetime || new Date().toISOString();
+        
+        // 构建待办事项内容
+        if (result.location) {
+          reminderContent += `地点：${result.location}\n`;
+        }
+        if (result.url) {
+          reminderContent += `链接：${result.url}\n`;
+        }
+        if (result.datetime) {
+          reminderContent += `时间：${new Date(result.datetime).toLocaleString('zh-CN')}`;
+        }
+        
+        // 添加职位相关信息
+        reminderContent += `\n公司：${result.company}\n职位：${result.position}`;
+
+        // 设置提醒时间（提前30分钟）
+        const reminderDate = new Date(reminderTime);
+        reminderDate.setMinutes(reminderDate.getMinutes() - 30);
+        const notificationTime = reminderDate.toISOString();
+
+        // 根据操作类型设置待办内容和提醒时间
+        switch (result.action) {
+          case '笔试':
+            reminderTitle = `[笔试] ${result.company} ${result.position}`;
+            reminderContent += '\n建议提前准备好相关材料和设备';
+            break;
+          case '面试':
+            reminderTitle = `[面试] ${result.company} ${result.position}`;
+            reminderContent += '\n建议提前复习岗位相关知识和准备自我介绍';
+            break;
+          case '已OFFER':
+          case 'OFFER':
+            reminderTitle = `[OFFER] ${result.company} ${result.position}`;
+            reminderContent += '\n请及时查看并回复OFFER详情';
+            break;
+          default:
+            reminderTitle = `[${result.action}] ${result.company} ${result.position}`;
+        }
+
+        // 调用addReminder函数创建日历待办事项
+        const resultReminder = await addReminder({
+          title: reminderTitle,
+          content: reminderContent,
+          time: reminderTime,
+          date: new Date(reminderTime).toISOString().split('T')[0], // 添加正确的date字段
+          notification_time: notificationTime,
+          job_id: matchingJob.id,
+          completed: false,
+          company: result.company, // 添加company字段
+          type: result.action, // 添加type字段
+          priority: 'high' // 添加priority字段
+        });
+        
+        if (resultReminder) {
+          console.log('日历待办事项创建成功:', resultReminder);
+          return true;
+        } else {
+          console.error('日历待办事项创建失败: addReminder返回null');
+          return false;
+        }
+      }
+      console.warn('未创建日历待办事项: 缺少必要信息');
+      return false;
+    } catch (error) {
+      console.error('创建日历待办事项失败:', error);
+      return false;
+    }
+  }
+
   const handleParseEmail = async (email: any) => {
     // 检查邮件是否已经解析过
     if (email.parsed_date) {
@@ -486,8 +657,96 @@ AI能力特写：
         }),
       })
       
-      // 刷新邮件列表
-      await fetchEmails()
+      // 如果解析结果有效，自动更新职位状态
+      if (result && result.company && result.position && result.action) {
+        // 增强模糊匹配逻辑
+        let matchingJob = jobs.find(job => 
+          job.company === result.company && job.position === result.position
+        );
+        
+        // 如果没有精确匹配，尝试模糊匹配
+        if (!matchingJob) {
+          matchingJob = jobs.find(job => 
+            job.company.includes(result.company) && job.position.includes(result.position)
+          );
+        }
+
+        if (matchingJob) {
+          // 记录原始状态，用于日志
+          const originalStatus = matchingJob.status;
+          const originalProgress = matchingJob.progress;
+          
+          // 更新职位状态
+          let newStatus = result.action
+          let newProgress = 25
+          
+          // 完善操作类型对应的状态和进度
+          switch (result.action) {
+            case '已投递':
+              newProgress = 25
+              break
+            case '笔试':
+              newProgress = 50
+              break
+            case '一面':
+              newStatus = '一面';
+              newProgress = 50
+              break
+            case '二面':
+              newStatus = '二面';
+              newProgress = 70
+              break
+            case '三面':
+              newStatus = '三面';
+              newProgress = 90
+              break
+            case '面试':
+              newProgress = 75
+              break
+            case '已OFFER':
+            case 'OFFER':
+              newStatus = 'OFFER';
+              newProgress = 100
+              break
+            case '已拒绝':
+              newProgress = 0
+              break
+          }
+
+          // 调用更新职位状态API
+          await updateJobStatus(
+            matchingJob.id, 
+            newStatus, 
+            newProgress,
+            result.datetime, // interview_datetime
+            result.location ? '线下' : (result.url ? '线上' : undefined), // interview_location_type
+            result.url || result.location // interview_location
+          )
+          
+          // 创建日历待办事项
+          const reminderCreated = await createCalendarReminder(result, matchingJob);
+          
+          // 显示更新成功信息，包含日历待办创建状态
+          showUpdateSuccessDialog({
+            company: result.company,
+            position: result.position,
+            oldStatus: originalStatus,
+            newStatus: newStatus,
+            emailAction: result.action,
+            datetime: result.datetime,
+            reminderCreated: reminderCreated
+          })
+          
+          // 记录日志
+          console.log(`自动更新职位状态: ${result.company} ${result.position} 从 ${originalStatus}(${originalProgress}%) 更新为 ${newStatus}(${newProgress}%)`);
+        } else {
+          console.log(`未找到匹配的职位: ${result.company} ${result.position}`);
+          alert(`未找到匹配的职位: ${result.company} ${result.position}\n建议手动添加或检查职位信息是否正确。`);
+        }
+      }
+      
+      // 刷新所有相关数据（邮件列表、职位卡片、日历）
+      await refreshAllData()
       
     } catch (error) {
       console.error('解析邮件失败:', error)
@@ -520,6 +779,7 @@ AI能力特写：
 
     setIsEmailUpdating(true)
     let updatedCount = 0
+    let reminderCount = 0
     let errorCount = 0
 
     // 只解析未解析的邮件
@@ -529,15 +789,23 @@ AI能力特写：
         
         if (result && result.company && result.position && result.action) {
           // 查找匹配的职位
-          const matchingJob = jobs.find(job => 
+          let matchingJob = jobs.find(job => 
             job.company === result.company && job.position === result.position
-          )
+          );
+          
+          // 如果没有精确匹配，尝试模糊匹配
+          if (!matchingJob) {
+            matchingJob = jobs.find(job => 
+              job.company.includes(result.company) && job.position.includes(result.position)
+            );
+          }
 
           if (matchingJob) {
             // 更新职位状态
             let newStatus = result.action
             let newProgress = 25
             
+            // 完善操作类型对应的状态和进度
             switch (result.action) {
               case '已投递':
                 newProgress = 25
@@ -545,10 +813,24 @@ AI能力特写：
               case '笔试':
                 newProgress = 50
                 break
+              case '一面':
+                newStatus = '一面';
+                newProgress = 50
+                break
+              case '二面':
+                newStatus = '二面';
+                newProgress = 70
+                break
+              case '三面':
+                newStatus = '三面';
+                newProgress = 90
+                break
               case '面试':
                 newProgress = 75
                 break
               case '已OFFER':
+              case 'OFFER':
+                newStatus = 'OFFER';
                 newProgress = 100
                 break
               case '已拒绝':
@@ -561,9 +843,15 @@ AI能力特写：
               newStatus, 
               newProgress,
               result.datetime, // interview_datetime
-              undefined, // interview_location_type
+              result.location ? '线下' : (result.url ? '线上' : undefined), // interview_location_type
               result.url || result.location // interview_location
             )
+
+            // 创建日历待办事项
+            const reminderCreated = await createCalendarReminder(result, matchingJob);
+            if (reminderCreated) {
+              reminderCount++;
+            }
 
             // 标记邮件为已解析
             await fetch('/api/emails/mark-parsed', {
@@ -586,7 +874,8 @@ AI能力特写：
               oldStatus: matchingJob.status,
               newStatus: newStatus,
               emailAction: result.action,
-              datetime: result.datetime
+              datetime: result.datetime,
+              reminderCreated: reminderCreated
             })
           }
         }
@@ -599,9 +888,9 @@ AI能力特写：
     setIsEmailUpdating(false)
     
     if (updatedCount > 0) {
-      alert(`成功更新 ${updatedCount} 个职位状态${errorCount > 0 ? `，${errorCount} 个失败` : ''}`)
-      // 刷新数据
-      await fetchEmails()
+      alert(`成功更新 ${updatedCount} 个职位状态${reminderCount > 0 ? `，创建了 ${reminderCount} 个日历待办事项` : ''}${errorCount > 0 ? `，${errorCount} 个失败` : ''}`)
+      // 刷新所有相关数据（邮件列表、职位卡片、日历）
+      await refreshAllData()
     } else if (errorCount > 0) {
       alert(`更新失败，请重试`)
     }
@@ -835,24 +1124,32 @@ AI能力特写：
   ).length
   const completedApplications = jobs.filter((job) => job.status === "已完成").length
 
+  // 职位卡片状态框样式方案：所有字体改为黑色，框内按状态区分颜色
   const getStatusColor = (status: string) => {
     switch (status) {
+      // 已投递：白色背景，黑色文字，浅灰色边框
       case "已投递":
-        return "bg-[#E0E9F0] text-[#4A5568] border-[#B4C2CD]"
+        return "bg-white text-black border-[#E0E9F0]"
+      // 待处理：浅黄色背景，黑色文字，中黄色边框
+      case "待处理":
       case "笔试":
-        return "bg-[#FEF5E7] text-[#C05621] border-[#F6AD55]"
+        return "bg-[#FEF5E7] text-black border-[#F6AD55]"
+      // 面试中：浅蓝色背景，黑色文字，天蓝色边框
+      case "面试中":
       case "一面":
-        return "bg-[#FED7D7] text-[#C53030] border-[#FC8181]"
       case "二面":
-        return "bg-[#FED7D7] text-[#C53030] border-[#FC8181]"
       case "三面":
-        return "bg-[#FED7D7] text-[#C53030] border-[#FC8181]"
+        return "bg-[#E0F2FE] text-black border-[#93C5FD]"
+      // 已通过：绿色背景，黑色文字，嫩绿色边框
+      case "已通过":
       case "OFFER":
-        return "bg-[#C6F6D5] text-[#22543D] border-[#68D391]"
+        return "bg-[#DCFCE7] text-black border-[#86EFAC]"
+      // 已拒绝：灰色背景，黑色文字，中灰色边框
       case "已拒绝":
-        return "bg-[#E2E8F0] text-[#64748B] border-[#CBD5E1]"
+        return "bg-[#F1F5F9] text-black border-[#CBD5E1]"
+      // 默认状态：白色背景，黑色文字，浅灰色边框
       default:
-        return "bg-[#E0E9F0] text-[#4A5568] border-[#B4C2CD]"
+        return "bg-white text-black border-[#E0E9F0]"
     }
   }
 
@@ -936,8 +1233,8 @@ AI能力特写：
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
               <Logo size="lg" className="flex-shrink-0" />
-              <div className="border-2 border-[#E0E9F0] rounded-xl px-4 py-2 bg-gradient-to-r from-[#E0E9F0] to-[#B4C2CD] shadow-sm">
-                <span className="text-gray-700 font-bold text-lg">职得</span>
+              <div className="border-2 border-[#E0E9F0] rounded-xl px-4 py-2 bg-gradient-to-r from-[#4285f4] to-[#2a97f3] hover:from-[#2a97f3] hover:to-[#4285f4] shadow-sm hover:shadow-md transition-all duration-200">
+                <span className="text-white font-bold text-lg">职得</span>
               </div>
             </div>
           </div>
@@ -1296,11 +1593,11 @@ AI能力特写：
             /* 空状态 - 新用户或全部完成 */
             <div 
               className="border-2 border-dashed border-[#B4C2CD] rounded-2xl p-8 text-center cursor-pointer hover:border-[#E0E9F0] hover:bg-[#E0E9F0]/20 transition-colors bg-gradient-to-r from-[#F5F8FA] to-[#E0E9F0]"
-              onClick={() => setIsAddJobOpen(true)}
+              onClick={() => router.push('/add-job')}
             >
               <Plus className="h-12 w-12 text-[#B4C2CD] mx-auto mb-4" />
                              <p className="text-gray-600 text-sm">
-                 请点击此处添加您的投递职位信息
+                 请点击此处添加您的投递职位信息（支持AI解析）
                </p>
                         </div>
                      ) : (
@@ -1366,7 +1663,7 @@ AI能力特写：
                            <div className="flex space-x-2 mt-4">
               <Dialog>
                 <DialogTrigger asChild>
-                                 <Button variant="outline" size="sm" className="flex-1 bg-white text-black border-black hover:bg-gray-50">
+                                 <Button variant="outline" size="sm" className="flex-1 bg-white text-black border-black hover:bg-gray-800 hover:text-white">
                                    <Eye className="h-4 w-4 mr-1" />
                                    详情
                                  </Button>
@@ -1483,7 +1780,7 @@ AI能力特写：
 
                              <Button 
                                size="sm" 
-                               className="flex-1 bg-black hover:bg-gray-800 text-white border border-black"
+                               className="flex-1 bg-white text-black border-black hover:bg-gray-50"
                                onClick={() => {
                                  router.push(`/insights/${encodeURIComponent(job.company)}/${encodeURIComponent(job.position)}`)
                                }}
@@ -1623,7 +1920,7 @@ AI能力特写：
                              <Button 
                                variant="outline" 
                                size="sm" 
-                               className="flex-1 bg-white text-black border-black hover:bg-gray-50"
+                               className="flex-1 bg-white text-black border-black hover:bg-gray-800 hover:text-white"
                                onClick={() => handleDeleteJob(job.id)}
                              >
                                <Trash2 className="h-4 w-4 mr-1" />
@@ -1699,7 +1996,7 @@ AI能力特写：
                            <div className="flex space-x-2 mt-4">
                              <Dialog>
                                <DialogTrigger asChild>
-                                 <Button variant="outline" size="sm" className="flex-1 bg-white text-black border-black hover:bg-gray-50">
+                                 <Button variant="outline" size="sm" className="flex-1 bg-white text-black border-black hover:bg-gray-800 hover:text-white">
                                    <Eye className="h-4 w-4 mr-1" />
                                    详情
                                  </Button>
@@ -1816,7 +2113,7 @@ AI能力特写：
 
                              <Button 
                                size="sm" 
-                               className="flex-1 bg-black hover:bg-gray-800 text-white border border-black"
+                               className="flex-1 bg-black hover:bg-gray-50 hover:text-black text-white border border-black"
                                onClick={() => {
                                  router.push(`/insights/${encodeURIComponent(job.company)}/${encodeURIComponent(job.position)}`)
                                }}
@@ -1956,7 +2253,7 @@ AI能力特写：
                              <Button 
                                variant="outline" 
                                size="sm" 
-                               className="flex-1 bg-white text-black border-black hover:bg-gray-50"
+                               className="flex-1 bg-white text-black border-black hover:bg-gray-800 hover:text-white"
                                onClick={() => handleDeleteJob(job.id)}
                              >
                                <Trash2 className="h-4 w-4 mr-1" />
@@ -2182,7 +2479,7 @@ AI能力特写：
             <Button 
               onClick={() => {
                 setIsAddOptionsOpen(false)
-                setIsAddJobOpen(true)
+                router.push('/add-job')
               }}
               className="w-full bg-black hover:bg-gray-800 text-white h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
             >
@@ -2192,7 +2489,7 @@ AI能力特写：
             <Button 
               onClick={() => {
                 setIsAddOptionsOpen(false)
-                setIsAIJobParseOpen(true)
+                router.push('/add-job')
               }}
               className="w-full bg-black hover:bg-gray-800 text-white h-14 text-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
             >
@@ -2220,13 +2517,38 @@ AI能力特写：
                             <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-800 flex items-center">
               <MessageSquare className="h-5 w-5 mr-2 text-[#B4C2CD]" />
-              邮箱授权码设置
+              邮箱配置设置
                               </DialogTitle>
             <DialogDescription className="text-gray-600">
-              请输入您的QQ邮箱授权码以启用邮件解析功能
+              请输入您的QQ邮箱地址和授权码以启用邮件解析功能
             </DialogDescription>
                             </DialogHeader>
           <div className="py-6 space-y-6">
+                                <div>
+              <Label htmlFor="qqEmail" className="text-gray-700 font-medium text-sm mb-3 block">
+                QQ邮箱地址
+              </Label>
+              <Input
+                id="qqEmail"
+                type="email"
+                value={qqEmail}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setQQEmail(value);
+                  // 简单的邮箱格式验证
+                  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+                  setIsQQEmailValid(value === '' || emailRegex.test(value));
+                }}
+                placeholder="请输入您的QQ邮箱地址"
+                className={`border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm h-12 text-gray-700 placeholder-gray-500 ${!isQQEmailValid ? 'border-red-500' : ''}`}
+                autoComplete="email"
+              />
+              {!isQQEmailValid && (
+                <p className="text-xs text-red-500 mt-1">
+                  请输入有效的邮箱地址
+                </p>
+              )}
+                                </div>
                                 <div>
               <Label htmlFor="emailAuthCode" className="text-gray-700 font-medium text-sm mb-3 block">
                 QQ邮箱授权码
@@ -2545,98 +2867,155 @@ AI能力特写：
                 </p>
                     </div>
 
-              {/* 解析结果预览 */}
-              {parsedJobs.length > 0 && (
+              {/* 职位信息表单 - 始终显示，支持手动填写和AI解析填充 */}
               <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    解析结果预览 ({parsedJobs.length} 个岗位)
-                  </h3>
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {parsedJobs.map((job, index) => (
-                      <Card key={index} className="border-[#E0E9F0] bg-white/90 backdrop-blur-sm">
-                        <CardContent className="p-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                              <Label className="text-gray-700 font-medium text-sm">公司名称</Label>
-                      <Input
-                                value={job.company}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].company = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
-                      />
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  {parsedJobs.length > 0 ? `解析结果预览 (${parsedJobs.length} 个岗位)` : '职位信息表单'}
+                </h3>
+                
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {/* 确保至少有一个空表单供用户填写 */}
+                  {(parsedJobs.length > 0 ? parsedJobs : [{}]).map((job, index) => (
+                    <Card key={index} className="border-[#E0E9F0] bg-white/90 backdrop-blur-sm">
+                      <CardContent className="p-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">公司名称 <span className="text-red-500">*</span></Label>
+                            <Input
+                              value={job.company || ''}
+                              onChange={(e) => {
+                                // 如果是新添加的空表单，先初始化parsedJobs
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], company: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              placeholder="请输入公司名称"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">职位名称 <span className="text-red-500">*</span></Label>
+                            <Input
+                              value={job.position || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], position: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              placeholder="请输入职位名称"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">工作地点</Label>
+                            <Input
+                              value={job.location || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], location: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              placeholder="请输入工作地点"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">薪资待遇</Label>
+                            <Input
+                              value={job.salary || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], salary: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              placeholder="请输入薪资待遇"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">投递日期</Label>
+                            <Input
+                              type="date"
+                              value={job.applied_date || new Date().toISOString().split('T')[0]}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], applied_date: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">投递状态</Label>
+                            <select
+                              value={job.status || '已投递'}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], status: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 rounded-md px-3 py-2 w-full"
+                            >
+                              <option value="已投递">已投递</option>
+                              <option value="待处理">待处理</option>
+                              <option value="面试中">面试中</option>
+                              <option value="已通过">已通过</option>
+                              <option value="已拒绝">已拒绝</option>
+                            </select>
+                          </div>
+                          <div>
+                            <Label className="text-gray-700 font-medium text-sm">投递网址</Label>
+                            <Input
+                              type="url"
+                              value={job.url || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], url: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
+                              placeholder="请输入投递网址"
+                            />
+                          </div>
+                          <div className="col-span-1 sm:col-span-2">
+                            <Label className="text-gray-700 font-medium text-sm">岗位描述</Label>
+                            <Textarea
+                              value={job.description || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], description: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              rows={3}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
+                            />
+                          </div>
+                          <div className="col-span-1 sm:col-span-2">
+                            <Label className="text-gray-700 font-medium text-sm">岗位要求</Label>
+                            <Textarea
+                              value={job.requirements || ''}
+                              onChange={(e) => {
+                                const updatedJobs = parsedJobs.length > 0 ? [...parsedJobs] : [{}]
+                                updatedJobs[index] = { ...updatedJobs[index], requirements: e.target.value }
+                                setParsedJobs(updatedJobs)
+                              }}
+                              rows={3}
+                              className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  
+                  {/* 无解析结果时的提示信息 */}
+                  {parsedJobs.length === 0 && (
+                    <div className="mt-4 p-4 bg-[#E0E9F0]/20 rounded-lg text-center text-gray-500">
+                      <p className="text-sm">您可以手动填写职位信息，或者在上方输入岗位描述文本并点击"开始解析"由AI自动填充</p>
                     </div>
-                      <div>
-                              <Label className="text-gray-700 font-medium text-sm">职位名称</Label>
-                        <Input
-                                value={job.position}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].position = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
-                        />
-                      </div>
-                      <div>
-                              <Label className="text-gray-700 font-medium text-sm">工作地点</Label>
-                        <Input
-                                value={job.location}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].location = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
-                              />
-                    </div>
-                    <div>
-                              <Label className="text-gray-700 font-medium text-sm">薪资待遇</Label>
-                      <Input
-                                value={job.salary}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].salary = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700"
-                      />
-                    </div>
-                            <div className="col-span-1 sm:col-span-2">
-                              <Label className="text-gray-700 font-medium text-sm">岗位描述</Label>
-                              <Textarea
-                                value={job.description}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].description = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                rows={3}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
-                              />
-                      </div>
-                            <div className="col-span-1 sm:grid-cols-2">
-                              <Label className="text-gray-700 font-medium text-sm">岗位要求</Label>
-                              <Textarea
-                                value={job.requirements}
-                                onChange={(e) => {
-                                  const updatedJobs = [...parsedJobs]
-                                  updatedJobs[index].requirements = e.target.value
-                                  setParsedJobs(updatedJobs)
-                                }}
-                                rows={3}
-                                className="mt-1 border-[#B4C2CD] focus:border-[#E0E9F0] focus:ring-[#E0E9F0] bg-white/80 backdrop-blur-sm text-gray-700 resize-none"
-                              />
-                      </div>
-                    </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
 
@@ -2707,6 +3086,12 @@ AI能力特写：
                         <span className="text-gray-900">{new Date(updateSuccessInfo.datetime).toLocaleString('zh-CN')}</span>
                             </div>
                     )}
+                    {updateSuccessInfo.reminderCreated && (
+                      <div className="col-span-2">
+                        <span className="font-medium text-gray-700">日历待办：</span>
+                        <span className="text-gray-900 text-blue-600 font-semibold">已创建日历待办事项</span>
+                      </div>
+                    )}
                           </div>
                         </div>
                   </div>
@@ -2731,13 +3116,14 @@ AI能力特写：
             className="flex flex-col items-center space-y-1 text-gray-600 hover:text-[#B4C2CD] transition-colors"
             onClick={() => router.push("/")}
           >
+            <Briefcase className="h-5 w-5" />
             <span className="text-sm">职位管理</span>
           </Button>
           <Button 
             variant="ghost" 
             size="icon"
             className="w-12 h-12 rounded-full bg-gradient-to-r from-[#4285f4] to-[#2a97f3] text-white hover:from-[#2a97f3] hover:to-[#4285f4] shadow-lg transition-all duration-200"
-            onClick={() => setIsAddOptionsOpen(true)}
+            onClick={() => router.push('/add-job')}
           >
             <Plus className="h-6 w-6" />
           </Button>
@@ -2746,6 +3132,7 @@ AI能力特写：
             className="flex flex-col items-center space-y-1 text-gray-600 hover:text-[#B4C2CD] transition-colors"
             onClick={() => router.push("/tasks")}
           >
+            <CheckCircle2 className="h-5 w-5" />
             <span className="text-sm">OFFER</span>
           </Button>
                   </div>

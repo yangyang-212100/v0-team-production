@@ -184,15 +184,15 @@ export default function PositionInsightPage({
             <>
               {/* 公司简介 */}
               {insightsData.companyData && (
-                <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-sm">
-                  <CardHeader className="pb-4 border-b border-[#E0E9F0]">
+                <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-sm w-full">
+                  <CardHeader className="pb-6 border-b border-[#E0E9F0] px-8 py-6">
                     <CardTitle className="text-xl font-bold text-gray-800 flex items-center">
                       <Building2 className="h-5 w-5 mr-2 text-[#B4C2CD]" />
                       公司简介
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-6">
-                    <div className="prose prose-sm max-w-none">
+                  <CardContent className="pt-6 px-8 pb-8">
+                    <div className="prose max-w-none">
                       <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
                         {formatContent(insightsData.companyData.culture || '暂无公司简介信息')}
                       </div>
@@ -203,26 +203,26 @@ export default function PositionInsightPage({
 
               {/* 岗位洞察 */}
               {insightsData.positionData && (
-                <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-sm">
-                  <CardHeader className="pb-4 border-b border-[#E0E9F0]">
+                <Card className="bg-[#F8FAFC]/95 backdrop-blur-sm border border-[#E0E9F0] rounded-2xl shadow-sm w-full">
+                  <CardHeader className="pb-6 border-b border-[#E0E9F0] px-8 py-6">
                     <CardTitle className="text-xl font-bold text-gray-800 flex items-center">
                       <Briefcase className="h-5 w-5 mr-2 text-[#B4C2CD]" />
                       岗位洞察
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-6">
-                    <div className="space-y-6">
+                  <CardContent className="pt-6 px-8 pb-8">
+                    <div className="space-y-8">
                       {insightsData.positionData.interview_experience && (
                         <div>
                           <h4 className="font-medium text-gray-700 mb-3 flex items-center">
                             <Sparkles className="h-4 w-4 mr-2 text-[#B4C2CD]" />
                             面试经验
                           </h4>
-                          <div className="bg-[#E0E9F0]/30 rounded-lg p-4 border border-[#E0E9F0]/30">
-                            <div className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
-                              {formatContent(insightsData.positionData.interview_experience)}
-                            </div>
-                          </div>
+                          <div className="bg-[#E0E9F0]/30 rounded-lg p-6 border border-[#E0E9F0]/30">
+                        <div className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
+                          {formatContent(insightsData.positionData.interview_experience)}
+                        </div>
+                      </div>
                         </div>
                       )}
                       
@@ -232,11 +232,11 @@ export default function PositionInsightPage({
                             <Sparkles className="h-4 w-4 mr-2 text-[#B4C2CD]" />
                             技能要求
                           </h4>
-                          <div className="bg-[#E0E9F0]/30 rounded-lg p-4 border border-[#E0E9F0]/30">
-                            <div className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
-                              {formatContent(insightsData.positionData.skill_requirements)}
-                            </div>
-                          </div>
+                          <div className="bg-[#E0E9F0]/30 rounded-lg p-6 border border-[#E0E9F0]/30">
+                        <div className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
+                          {formatContent(insightsData.positionData.skill_requirements)}
+                        </div>
+                      </div>
                         </div>
                       )}
                     </div>
